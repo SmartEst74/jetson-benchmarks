@@ -64,7 +64,7 @@ nav .gh{margin-left:auto;color:var(--muted);font-size:13px}
   <a href="benchmarks.html">Benchmarks</a>
   <a href="roles.html">Agent Roles</a>
   <a href="roadmap.html" class="active">Test Roadmap</a>
-  <span class="gh">github.com/SmartEst74/jetson-llm-guide</span>
+  <span class="gh">github.com/SmartEst74/jetson-benchmarks</span>
 </nav>
 <div class="wrap">
   <div class="hero">
@@ -74,7 +74,7 @@ nav .gh{margin-left:auto;color:var(--muted);font-size:13px}
   <div class="summary" id="summary"></div>
   <div class="timeline" id="timeline"></div>
 </div>
-<div class="footer">Jetson LLM Guide · <a href="https://github.com/SmartEst74/jetson-llm-guide">Source</a></div>
+<div class="footer">Jetson LLM Guide · <a href="https://github.com/SmartEst74/jetson-benchmarks">Source</a></div>
 <script>
 fetch('../data/test-roadmap.json').then(r=>r.json()).then(phases=>{
   const totalModels=phases.reduce((s,p)=>s+p.models.length,0);
