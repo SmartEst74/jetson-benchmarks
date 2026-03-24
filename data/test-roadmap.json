@@ -1,0 +1,146 @@
+[
+  {
+    "phase": 1,
+    "name": "High-Priority Function Calling Champions",
+    "status": "planned",
+    "description": "Test the top BFCL v4 performers that fit on Jetson. These models scored higher than anything we've tested.",
+    "models": [
+      {
+        "model": "Nanbeige4-3B-Thinking",
+        "quant": "Q8_0",
+        "why": "51.4 BFCL at 3B = potentially faster AND smarter for tool calling than our current 4B default",
+        "predicted_tps": 13.4,
+        "priority": "critical",
+        "blocker": "Need to find/convert GGUF"
+      },
+      {
+        "model": "xLAM-2-3b-fc-r",
+        "quant": "Q8_0",
+        "why": "41.22 BFCL, 87.5% parallel FC at only 3B. Salesforce FC specialist.",
+        "predicted_tps": 13.4,
+        "priority": "high",
+        "blocker": null
+      },
+      {
+        "model": "xLAM-2-8b-fc-r",
+        "quant": "Q4_K_M",
+        "why": "46.68 BFCL with 87.5% parallel FC. Best 8B tool caller.",
+        "predicted_tps": 9.4,
+        "priority": "high",
+        "blocker": null
+      }
+    ]
+  },
+  {
+    "phase": 2,
+    "name": "Alternative 8B Models — Head-to-Head",
+    "status": "planned",
+    "description": "Compare the best 8B models across different specializations to validate our Qwen3.5 choice.",
+    "models": [
+      {
+        "model": "BitAgent-Bounty-8B",
+        "quant": "Q4_K_M",
+        "why": "46.23 BFCL with 93.12% Multiple FC — highest of ANY model on BFCL",
+        "predicted_tps": 9.4,
+        "priority": "high",
+        "blocker": null
+      },
+      {
+        "model": "ToolACE-2-8B",
+        "quant": "Q4_K_M",
+        "why": "42.44 BFCL, 87.1% simple FC. Huawei/USTC tool specialist.",
+        "predicted_tps": 9.4,
+        "priority": "medium",
+        "blocker": null
+      },
+      {
+        "model": "Qwen3-8B",
+        "quant": "Q5_K_M",
+        "why": "42.57 BFCL, 93.75% parallel FC. GGUF already on device.",
+        "predicted_tps": 10.0,
+        "priority": "medium",
+        "blocker": null
+      }
+    ]
+  },
+  {
+    "phase": 3,
+    "name": "Ultra-Lightweight Speed Demons",
+    "status": "planned",
+    "description": "Test tiny models for instant hot-swap routing layer and latency-critical tool calls.",
+    "models": [
+      {
+        "model": "xLAM-2-1b-fc-r",
+        "quant": "Q8_0",
+        "why": "30.44 BFCL at 1B. ~39 tok/s predicted. Tool routing layer candidate.",
+        "predicted_tps": 39.1,
+        "priority": "medium",
+        "blocker": null
+      },
+      {
+        "model": "Arch-Agent-1.5B",
+        "quant": "Q8_0",
+        "why": "32.14 BFCL at 1.5B. Agent-optimized architecture.",
+        "predicted_tps": 26.1,
+        "priority": "medium",
+        "blocker": null
+      },
+      {
+        "model": "Qwen3-1.7B",
+        "quant": "Q8_0",
+        "why": "28.41 BFCL at 1.7B. Thinking mode available. ~23.5 tok/s.",
+        "predicted_tps": 23.5,
+        "priority": "low",
+        "blocker": null
+      },
+      {
+        "model": "Granite-4.0-350m",
+        "quant": "Q8_0",
+        "why": "18.98 BFCL at 350M. ~117 tok/s. Instant routing classifier.",
+        "predicted_tps": 117.3,
+        "priority": "low",
+        "blocker": null
+      }
+    ]
+  },
+  {
+    "phase": 4,
+    "name": "Tight-Fit Deep Reasoners",
+    "status": "planned",
+    "description": "Push the 8GB boundary with larger models at aggressive quantization. May use swap.",
+    "models": [
+      {
+        "model": "Qwen3-14B",
+        "quant": "Q3_K_M",
+        "why": "41.03 BFCL at 14B. Deeper reasoning. ~6GB tight fit.",
+        "predicted_tps": 7.8,
+        "priority": "medium",
+        "blocker": "May exceed RAM, swap performance unknown"
+      },
+      {
+        "model": "Gemma-3-12b-it",
+        "quant": "Q3_K_M",
+        "why": "30.43 BFCL, best multi-turn (27.53%) among viable models. Multimodal capable.",
+        "predicted_tps": 8.5,
+        "priority": "medium",
+        "blocker": "Tight fit, Q3 quality loss unknown"
+      },
+      {
+        "model": "Phi-4",
+        "quant": "Q3_K_M",
+        "why": "28.79 BFCL, 24.73% multi-turn. MIT license. Microsoft architecture.",
+        "predicted_tps": 7.8,
+        "priority": "low",
+        "blocker": "14B at Q3 = quality vs size tradeoff"
+      }
+    ]
+  },
+  {
+    "phase": 5,
+    "name": "Custom Role Benchmarks",
+    "status": "planned",
+    "description": "Run our 30-task role benchmark suite across all tested models. Grade outputs scientifically. Produce the definitive Jetson role-model mapping.",
+    "models": [],
+    "depends_on": [1, 2, 3, 4]
+  }
+]

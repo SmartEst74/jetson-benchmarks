@@ -1,0 +1,100 @@
+name: Validate Benchmark Data
+
+on:
+  push:
+    paths:
+      - 'data/**'
+  pull_request:
+    paths:
+      - 'data/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSON files
+        run: |
+          echo "Validating JSON files..."
+          errors=0
+
+          for f in data/*.json; do
+            if python3 -m json.tool "$f" > /dev/null 2>&1; then
+              echo "  ✓ $f"
+            else
+              echo "  ✗ $f — invalid JSON"
+              errors=$((errors + 1))
+            fi
+          done
+
+          if [ $errors -gt 0 ]; then
+            echo "FAILED: $errors file(s) have invalid JSON"
+            exit 1
+          fi
+          echo "All JSON files valid."
+
+      - name: Validate jetson-models.json schema
+        run: |
+          python3 -c "
+          import json, sys
+
+          with open('data/jetson-models.json') as f:
+              models = json.load(f)
+
+          assert isinstance(models, list), 'Root must be array'
+          required = {'model', 'params_b', 'best_quant', 'gguf_size_gb', 'status', 'tier', 'provider'}
+          valid_status = {'tested', 'candidate', 'rejected'}
+          valid_tiers = {1, 2, 3, 4}
+          errors = 0
+
+          for i, m in enumerate(models):
+              missing = required - set(m.keys())
+              if missing:
+                  print(f'  Model {i} ({m.get(\"model\",\"?\")}): missing {missing}')
+                  errors += 1
+              if m.get('status') not in valid_status:
+                  print(f'  Model {i} ({m.get(\"model\",\"?\")}): invalid status {m.get(\"status\")}')
+                  errors += 1
+              if m.get('tier') not in valid_tiers:
+                  print(f'  Model {i} ({m.get(\"model\",\"?\")}): invalid tier {m.get(\"tier\")}')
+                  errors += 1
+
+          if errors:
+              print(f'FAILED: {errors} validation error(s)')
+              sys.exit(1)
+          print(f'Validated {len(models)} models in jetson-models.json')
+          "
+
+      - name: Validate agent-roles.json schema
+        run: |
+          python3 -c "
+          import json, sys
+
+          with open('data/agent-roles.json') as f:
+              data = json.load(f)
+
+          roles = data.get('roles', [])
+          assert len(roles) > 0, 'Must have at least one role'
+          errors = 0
+
+          for role in roles:
+              if not role.get('id'):
+                  print(f'  Role missing id')
+                  errors += 1
+              tasks = role.get('tasks', [])
+              for t in tasks:
+                  if not t.get('id') or not t.get('prompt'):
+                      print(f'  Task in {role.get(\"id\",\"?\")} missing id or prompt')
+                      errors += 1
+                  grading = t.get('grading', {})
+                  total_weight = sum(v.get('weight', 0) for v in grading.values())
+                  if abs(total_weight - 1.0) > 0.01:
+                      print(f'  Task {t.get(\"id\",\"?\")}: grading weights sum to {total_weight}, expected 1.0')
+                      errors += 1
+
+          if errors:
+              print(f'FAILED: {errors} validation error(s)')
+              sys.exit(1)
+          print(f'Validated {len(roles)} roles with {sum(len(r.get(\"tasks\",[]))for r in roles)} tasks')
+          "

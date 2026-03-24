@@ -1,0 +1,78 @@
+[
+  {
+    "model": "Qwen3.5-4B",
+    "quant": "Q8_0",
+    "params_b": 4.0,
+    "runtime": "llama.cpp b8095",
+    "device": "Jetson Orin Nano Super 8GB",
+    "gen_tps": 10.5,
+    "prompt_tps": 257.0,
+    "bfcl_v4": 49.7,
+    "provider_livecodebench_v6": 82.7,
+    "provider_gpqa_diamond": 80.1,
+    "provider_ifeval": 88.9,
+    "provider_notes": "Qwen3.5 official card (thinking variant)",
+    "measured_notes": "Production default",
+    "source_refs": [
+      "bfcl_v4",
+      "qwen35_4b_card",
+      "unsloth_qwen35_4b_gguf"
+    ]
+  },
+  {
+    "model": "Qwen3.5-9B",
+    "quant": "Q4_K_M",
+    "params_b": 9.0,
+    "runtime": "llama.cpp b8095",
+    "device": "Jetson Orin Nano Super 8GB",
+    "gen_tps": 8.8,
+    "prompt_tps": 78.0,
+    "bfcl_v4": null,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "provider_notes": "No consolidated provider sheet used here",
+    "measured_notes": "Backup profile",
+    "source_refs": [
+      "unsloth_qwen35_4b_gguf"
+    ]
+  },
+  {
+    "model": "Qwen3-8B",
+    "quant": "Q5_K_M",
+    "params_b": 8.0,
+    "runtime": "llama.cpp b8095",
+    "device": "Jetson Orin Nano Super 8GB",
+    "gen_tps": null,
+    "prompt_tps": null,
+    "bfcl_v4": 42.57,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "provider_notes": "Model card + BFCL entry",
+    "measured_notes": "Kept for comparison",
+    "source_refs": [
+      "bfcl_v4",
+      "qwen3_8b_card",
+      "unsloth_qwen3_8b_gguf"
+    ]
+  },
+  {
+    "model": "Qwen3.5-35B-A3B",
+    "quant": "IQ3_XXS",
+    "params_b": 35.0,
+    "runtime": "llama.cpp b8095",
+    "device": "Jetson Orin Nano Super 8GB",
+    "gen_tps": 0.18,
+    "prompt_tps": null,
+    "bfcl_v4": null,
+    "provider_livecodebench_v6": 45.2,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "provider_notes": "Qwen3.5-30B-A3B card used as nearest provider signal in prior analysis",
+    "measured_notes": "Rejected on 8GB (too slow)",
+    "source_refs": [
+      "qwen35_30b_a3b_card"
+    ]
+  }
+]

@@ -1,0 +1,1227 @@
+[
+  {
+    "model": "Qwen3.5-4B",
+    "params_b": 4.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 4.48,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 10.5,
+    "gen_tps_predicted": 10.5,
+    "prompt_tps": 257,
+    "bfcl_v4": 49.7,
+    "bfcl_mode": "card",
+    "bfcl_simple": null,
+    "bfcl_multiple": null,
+    "bfcl_parallel": null,
+    "bfcl_multi_turn": null,
+    "bfcl_web_search": null,
+    "bfcl_irrelevance": null,
+    "provider_livecodebench_v6": 82.7,
+    "provider_gpqa_diamond": 80.1,
+    "provider_ifeval": 88.9,
+    "architecture": "Hybrid Gated DeltaNet + Grouped Query Attention",
+    "features": [
+      "tool_calling",
+      "thinking",
+      "json_mode"
+    ],
+    "license": "apache-2.0",
+    "provider": "Qwen",
+    "gguf_source": "unsloth/Qwen3.5-4B-GGUF",
+    "notes": "Production default. Near-lossless quant. Best capability-per-GB on 8GB Jetson.",
+    "test_date": "2026-03-23",
+    "recommended_roles": [
+      "coder",
+      "researcher",
+      "planner",
+      "writer"
+    ],
+    "source_refs": [
+      "bfcl_v4",
+      "qwen35_4b_card",
+      "unsloth_qwen35_4b_gguf"
+    ]
+  },
+  {
+    "model": "Qwen3.5-9B",
+    "params_b": 9.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 5.3,
+    "status": "tested",
+    "tier": 2,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 8.8,
+    "gen_tps_predicted": 8.8,
+    "prompt_tps": 78,
+    "bfcl_v4": null,
+    "bfcl_mode": null,
+    "bfcl_simple": null,
+    "bfcl_multiple": null,
+    "bfcl_parallel": null,
+    "bfcl_multi_turn": null,
+    "bfcl_web_search": null,
+    "bfcl_irrelevance": null,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Hybrid Gated DeltaNet + Grouped Query Attention",
+    "features": [
+      "tool_calling",
+      "thinking",
+      "json_mode"
+    ],
+    "license": "apache-2.0",
+    "provider": "Qwen",
+    "gguf_source": "unsloth/Qwen3.5-9B-GGUF",
+    "notes": "Backup profile. Deeper reasoning but slower. 69% bandwidth efficiency.",
+    "test_date": "2026-03-22",
+    "recommended_roles": [
+      "reviewer",
+      "researcher"
+    ],
+    "source_refs": [
+      "unsloth_qwen35_9b_gguf"
+    ]
+  },
+  {
+    "model": "Qwen3.5-35B-A3B",
+    "params_b": 35.0,
+    "best_quant": "IQ3_XXS",
+    "gguf_size_gb": 12.18,
+    "status": "rejected",
+    "tier": 4,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 0.18,
+    "gen_tps_predicted": 0.18,
+    "prompt_tps": null,
+    "bfcl_v4": null,
+    "bfcl_mode": null,
+    "bfcl_simple": null,
+    "bfcl_multiple": null,
+    "bfcl_parallel": null,
+    "bfcl_multi_turn": null,
+    "bfcl_web_search": null,
+    "bfcl_irrelevance": null,
+    "provider_livecodebench_v6": 45.2,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Hybrid DeltaNet + GQA + Sparse MoE (256 experts, 9 active)",
+    "features": [
+      "tool_calling",
+      "thinking"
+    ],
+    "license": "apache-2.0",
+    "provider": "Qwen",
+    "gguf_source": "unsloth/Qwen3.5-35B-A3B-GGUF",
+    "notes": "REJECTED. --cpu-moe=0.18 tok/s, partial GPU=swap thrash. 5.25GB overflow to swap.",
+    "test_date": "2026-03-23",
+    "recommended_roles": [],
+    "source_refs": [
+      "qwen35_30b_a3b_card"
+    ]
+  },
+  {
+    "model": "Nanbeige4-3B-Thinking",
+    "params_b": 3.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 3.9,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 17.22,
+    "gen_tps_predicted": 12.0,
+    "prompt_tps": null,
+    "bfcl_v4": 51.4,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 81.58,
+    "bfcl_multiple": 79.42,
+    "bfcl_parallel": 75.0,
+    "bfcl_multi_turn": 36.77,
+    "bfcl_web_search": 21.5,
+    "bfcl_irrelevance": 51.12,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "LLaMA",
+    "features": [
+      "tool_calling",
+      "thinking"
+    ],
+    "license": "apache-2.0",
+    "provider": "Nanbeige",
+    "gguf_source": "bartowski/Nanbeige_Nanbeige4-3B-Thinking-2511-GGUF",
+    "notes": "TESTED. 17.22 tok/s — FASTEST model on Jetson! Near-100% bandwidth efficiency (LLaMA arch). Highest BFCL v4 at 3B. Deep thinker: needs 4096+ tokens for visible output. All tokens go to reasoning_content field.",
+    "test_date": "2026-03-23",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "xLAM-2-8b-fc-r",
+    "params_b": 8.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 5.0,
+    "status": "candidate",
+    "tier": 2,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 9.4,
+    "prompt_tps": null,
+    "bfcl_v4": 46.68,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 84.58,
+    "bfcl_multiple": 67.95,
+    "bfcl_parallel": 87.5,
+    "bfcl_multi_turn": 13.98,
+    "bfcl_web_search": 6.5,
+    "bfcl_irrelevance": 70.0,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Fine-tuned for function calling",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "cc-by-nc-4.0",
+    "provider": "Salesforce",
+    "gguf_source": null,
+    "notes": "Purpose-built function calling model. Highest parallel FC score (87.5%) of any 8B. Strong irrelevance detection.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "xLAM-2-3b-fc-r",
+    "params_b": 3.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 3.06,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 20.79,
+    "gen_tps_predicted": 13.4,
+    "prompt_tps": null,
+    "bfcl_v4": 41.22,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 82.96,
+    "bfcl_multiple": 62.92,
+    "bfcl_parallel": 87.5,
+    "bfcl_multi_turn": 11.4,
+    "bfcl_web_search": 2.5,
+    "bfcl_irrelevance": 58.38,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Fine-tuned for function calling",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "cc-by-nc-4.0",
+    "provider": "Salesforce",
+    "gguf_source": null,
+    "notes": "Incredible function calling at only 3B. 87.5% parallel FC. Fast on Jetson.",
+    "test_date": "2026-03-24",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ],
+    "jetson_settings": {
+      "ctx_size": 4096,
+      "n_gpu_layers": 99,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-3B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+    },
+    "thinking_metrics": {
+      "honors_no_think": true,
+      "thinking_chars": 0,
+      "thinking_ratio": 0.0
+    },
+    "thinking_quality": {
+      "gen_tps": 19.3,
+      "thinking_chars": 0,
+      "response_chars": 35
+    }
+  },
+  {
+    "model": "BitAgent-Bounty-8B",
+    "params_b": 8.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 5.0,
+    "status": "candidate",
+    "tier": 2,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 9.4,
+    "prompt_tps": null,
+    "bfcl_v4": 46.23,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 81.6,
+    "bfcl_multiple": 93.12,
+    "bfcl_parallel": 68.75,
+    "bfcl_multi_turn": 1.51,
+    "bfcl_web_search": 0.0,
+    "bfcl_irrelevance": 62.38,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Fine-tuned Llama 3.1 8B",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Apache-2.0",
+    "provider": "Bittensor",
+    "gguf_source": null,
+    "notes": "Highest Multiple-FC score (93.12%) of ANY model on entire BFCL. Weak multi-turn.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "ToolACE-2-8B",
+    "params_b": 8.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 5.0,
+    "status": "candidate",
+    "tier": 2,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 9.4,
+    "prompt_tps": null,
+    "bfcl_v4": 42.44,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 87.1,
+    "bfcl_multiple": 77.42,
+    "bfcl_parallel": 75.0,
+    "bfcl_multi_turn": 18.49,
+    "bfcl_web_search": 8.5,
+    "bfcl_irrelevance": 38.38,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Fine-tuned for tool/function calling",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Apache-2.0",
+    "provider": "Huawei Noah & USTC",
+    "gguf_source": null,
+    "notes": "Strong simple FC (87.1%). Balanced across categories. Has format sensitivity data.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Qwen3-8B",
+    "params_b": 8.0,
+    "best_quant": "Q5_K_M",
+    "gguf_size_gb": 5.5,
+    "status": "tested",
+    "tier": 2,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 10.24,
+    "gen_tps_predicted": 10.0,
+    "prompt_tps": null,
+    "bfcl_v4": 42.57,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 87.58,
+    "bfcl_multiple": 80.53,
+    "bfcl_parallel": 93.75,
+    "bfcl_multi_turn": 14.62,
+    "bfcl_web_search": 12.0,
+    "bfcl_irrelevance": 41.75,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling",
+      "thinking",
+      "json_mode"
+    ],
+    "license": "apache-2.0",
+    "provider": "Qwen",
+    "gguf_source": "unsloth/Qwen3-8B-GGUF",
+    "notes": "TESTED. 10.24 tok/s at 512 tokens. OOM killed (code 137) after first 1783-token request due to KV cache pressure. T2 model with swap risk.",
+    "test_date": "2026-03-23",
+    "recommended_roles": [
+      "tool_caller",
+      "coder"
+    ],
+    "source_refs": [
+      "bfcl_v4",
+      "qwen3_8b_card",
+      "unsloth_qwen3_8b_gguf"
+    ]
+  },
+  {
+    "model": "Qwen3-4B-Instruct-2507",
+    "params_b": 4.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 4.5,
+    "status": "candidate",
+    "tier": 1,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 10.4,
+    "prompt_tps": null,
+    "bfcl_v4": 35.68,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 87.88,
+    "bfcl_multiple": 76.39,
+    "bfcl_parallel": 87.5,
+    "bfcl_multi_turn": 17.63,
+    "bfcl_web_search": 3.0,
+    "bfcl_irrelevance": 22.12,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling",
+      "thinking"
+    ],
+    "license": "apache-2.0",
+    "provider": "Qwen",
+    "gguf_source": null,
+    "notes": "July 2507 instruct variant. Compare with Qwen3.5-4B to measure architecture improvement.",
+    "test_date": null,
+    "recommended_roles": [
+      "coder",
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Qwen3-14B",
+    "params_b": 14.0,
+    "best_quant": "Q3_K_M",
+    "gguf_size_gb": 6.0,
+    "status": "candidate",
+    "tier": 3,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 7.8,
+    "prompt_tps": null,
+    "bfcl_v4": 41.03,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 84.94,
+    "bfcl_multiple": 80.01,
+    "bfcl_parallel": 87.5,
+    "bfcl_multi_turn": 19.57,
+    "bfcl_web_search": 10.0,
+    "bfcl_irrelevance": 34.75,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling",
+      "thinking",
+      "json_mode"
+    ],
+    "license": "apache-2.0",
+    "provider": "Qwen",
+    "gguf_source": null,
+    "notes": "Tight fit at Q3_K_M. May use swap. Worth testing for deeper reasoning tasks.",
+    "test_date": null,
+    "recommended_roles": [
+      "researcher",
+      "reviewer"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Hammer2.1-7b",
+    "params_b": 7.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 4.5,
+    "status": "candidate",
+    "tier": 1,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 10.4,
+    "prompt_tps": null,
+    "bfcl_v4": 31.67,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 85.5,
+    "bfcl_multiple": 69.5,
+    "bfcl_parallel": 50.0,
+    "bfcl_multi_turn": 0.0,
+    "bfcl_web_search": 0.0,
+    "bfcl_irrelevance": 23.87,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Fine-tuned for function calling",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "cc-by-nc-4.0",
+    "provider": "MadeAgents",
+    "gguf_source": null,
+    "notes": "Strong simple FC. Zero multi-turn — single-call specialist only.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Hammer2.1-3b",
+    "params_b": 3.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 3.06,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 20.93,
+    "gen_tps_predicted": 13.4,
+    "prompt_tps": null,
+    "bfcl_v4": 29.71,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 84.96,
+    "bfcl_multiple": 70.54,
+    "bfcl_parallel": 56.25,
+    "bfcl_multi_turn": 3.01,
+    "bfcl_web_search": 0.0,
+    "bfcl_irrelevance": 16.5,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Fine-tuned for function calling",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "qwen-research",
+    "provider": "MadeAgents",
+    "gguf_source": null,
+    "notes": "Decent simple FC at small size. Fast inference candidate.",
+    "test_date": "2026-03-24",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ],
+    "jetson_settings": {
+      "ctx_size": 4096,
+      "n_gpu_layers": 99,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/hammer2.1-3b-q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+    },
+    "thinking_metrics": {
+      "honors_no_think": true,
+      "thinking_chars": 0,
+      "thinking_ratio": 0.0
+    },
+    "thinking_quality": {
+      "gen_tps": 20.84,
+      "thinking_chars": 0,
+      "response_chars": 2033
+    }
+  },
+  {
+    "model": "Arch-Agent-3B",
+    "params_b": 3.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 3.5,
+    "status": "candidate",
+    "tier": 1,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 13.4,
+    "prompt_tps": null,
+    "bfcl_v4": 35.36,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 86.67,
+    "bfcl_multiple": 72.91,
+    "bfcl_parallel": 68.75,
+    "bfcl_multi_turn": 6.88,
+    "bfcl_web_search": 0.5,
+    "bfcl_irrelevance": 34.88,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Agent-optimized",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "katanemo-research",
+    "provider": "katanemo",
+    "gguf_source": null,
+    "notes": "Purpose-built agent model. Good irrelevance detection for 3B.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller",
+      "planner"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Arch-Agent-1.5B",
+    "params_b": 1.5,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 2.88,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 18.34,
+    "gen_tps_predicted": 26.1,
+    "prompt_tps": null,
+    "bfcl_v4": 32.14,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 82.67,
+    "bfcl_multiple": 67.73,
+    "bfcl_parallel": 75.0,
+    "bfcl_multi_turn": 8.17,
+    "bfcl_web_search": 0.0,
+    "bfcl_irrelevance": 26.62,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Agent-optimized",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "katanemo-research",
+    "provider": "katanemo",
+    "gguf_source": null,
+    "notes": "Ultra-fast agent model. 32.14 BFCL at 1.5B is remarkable. Hot-swap candidate for quick tool calls.",
+    "test_date": "2026-03-24",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ],
+    "jetson_settings": {
+      "ctx_size": 4096,
+      "n_gpu_layers": 99,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Arch-Agent-1.5B.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+    },
+    "thinking_metrics": {
+      "honors_no_think": true,
+      "thinking_chars": 0,
+      "thinking_ratio": 0.0
+    },
+    "thinking_quality": {
+      "gen_tps": 18.31,
+      "thinking_chars": 0,
+      "response_chars": 1897
+    }
+  },
+  {
+    "model": "Phi-4",
+    "params_b": 14.0,
+    "best_quant": "Q3_K_M",
+    "gguf_size_gb": 6.0,
+    "status": "candidate",
+    "tier": 3,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 7.8,
+    "prompt_tps": null,
+    "bfcl_v4": 28.79,
+    "bfcl_mode": "Prompt",
+    "bfcl_simple": 69.56,
+    "bfcl_multiple": 60.7,
+    "bfcl_parallel": 50.0,
+    "bfcl_multi_turn": 24.73,
+    "bfcl_web_search": 4.5,
+    "bfcl_irrelevance": 3.88,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "thinking"
+    ],
+    "license": "MIT",
+    "provider": "Microsoft",
+    "gguf_source": null,
+    "notes": "Tight fit. Strong reasoning (24.73% multi-turn best in class). MIT license. Weak irrelevance detection.",
+    "test_date": null,
+    "recommended_roles": [
+      "researcher",
+      "writer"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Gemma-3-4b-it",
+    "params_b": 4.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 4.5,
+    "status": "candidate",
+    "tier": 1,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 10.4,
+    "prompt_tps": null,
+    "bfcl_v4": 19.62,
+    "bfcl_mode": "Prompt",
+    "bfcl_simple": 61.12,
+    "bfcl_multiple": 60.84,
+    "bfcl_parallel": 100.0,
+    "bfcl_multi_turn": 8.6,
+    "bfcl_web_search": 1.0,
+    "bfcl_irrelevance": 0.38,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [],
+    "license": "gemma-terms-of-use",
+    "provider": "Google",
+    "gguf_source": null,
+    "notes": "Perfect parallel FC (100%!) but weak overall. Compare for multimodal potential.",
+    "test_date": null,
+    "recommended_roles": [
+      "writer"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Gemma-3-12b-it",
+    "params_b": 12.0,
+    "best_quant": "Q3_K_M",
+    "gguf_size_gb": 5.5,
+    "status": "candidate",
+    "tier": 2,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 8.5,
+    "prompt_tps": null,
+    "bfcl_v4": 30.43,
+    "bfcl_mode": "Prompt",
+    "bfcl_simple": 79.44,
+    "bfcl_multiple": 74.24,
+    "bfcl_parallel": 93.75,
+    "bfcl_multi_turn": 27.53,
+    "bfcl_web_search": 4.0,
+    "bfcl_irrelevance": 5.75,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [],
+    "license": "gemma-terms-of-use",
+    "provider": "Google",
+    "gguf_source": null,
+    "notes": "Best multi-turn (27.53%) among Jetson-viable. Multimodal capable. Tight fit at Q3.",
+    "test_date": null,
+    "recommended_roles": [
+      "researcher",
+      "writer"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "MiniCPM3-4B",
+    "params_b": 4.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 4.5,
+    "status": "candidate",
+    "tier": 1,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 10.4,
+    "prompt_tps": null,
+    "bfcl_v4": 25.55,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 81.75,
+    "bfcl_multiple": 65.21,
+    "bfcl_parallel": 68.75,
+    "bfcl_multi_turn": 12.04,
+    "bfcl_web_search": 0.0,
+    "bfcl_irrelevance": 3.88,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Apache-2.0",
+    "provider": "openbmb",
+    "gguf_source": null,
+    "notes": "Compact 4B with native FC support. Apache-2.0 license.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Llama-3.1-8B-Instruct",
+    "params_b": 8.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 5.0,
+    "status": "candidate",
+    "tier": 2,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 9.4,
+    "prompt_tps": null,
+    "bfcl_v4": 25.83,
+    "bfcl_mode": "Prompt",
+    "bfcl_simple": 84.0,
+    "bfcl_multiple": 70.76,
+    "bfcl_parallel": 93.75,
+    "bfcl_multi_turn": 10.75,
+    "bfcl_web_search": 3.0,
+    "bfcl_irrelevance": 11.12,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Meta Llama 3 Community",
+    "provider": "Meta",
+    "gguf_source": null,
+    "notes": "Meta's workhorse 8B. 93.75% parallel FC. Good baseline comparison.",
+    "test_date": null,
+    "recommended_roles": [
+      "coder",
+      "writer"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Llama-3.2-3B-Instruct",
+    "params_b": 3.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 3.19,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 19.12,
+    "gen_tps_predicted": 13.4,
+    "prompt_tps": null,
+    "bfcl_v4": 21.95,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 82.67,
+    "bfcl_multiple": 58.33,
+    "bfcl_parallel": 87.5,
+    "bfcl_multi_turn": 6.24,
+    "bfcl_web_search": 1.0,
+    "bfcl_irrelevance": 4.0,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Meta Llama 3 Community",
+    "provider": "Meta",
+    "gguf_source": null,
+    "notes": "Compact 3B from Meta. High parallel FC. Fast on Jetson.",
+    "test_date": "2026-03-24",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ],
+    "jetson_settings": {
+      "ctx_size": 4096,
+      "n_gpu_layers": 99,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Llama-3.2-3B-Instruct-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+    },
+    "thinking_metrics": {
+      "honors_no_think": true,
+      "thinking_chars": 0,
+      "thinking_ratio": 0.0
+    },
+    "thinking_quality": {
+      "gen_tps": 19.07,
+      "thinking_chars": 0,
+      "response_chars": 2079
+    }
+  },
+  {
+    "model": "xLAM-2-1b-fc-r",
+    "params_b": 1.0,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 1.53,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 32.11,
+    "gen_tps_predicted": 39.1,
+    "prompt_tps": null,
+    "bfcl_v4": 30.44,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 69.04,
+    "bfcl_multiple": 55.14,
+    "bfcl_parallel": 87.5,
+    "bfcl_multi_turn": 3.87,
+    "bfcl_web_search": 0.0,
+    "bfcl_irrelevance": 36.0,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Fine-tuned for function calling",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "cc-by-nc-4.0",
+    "provider": "Salesforce",
+    "gguf_source": null,
+    "notes": "Ultra-lightweight FC specialist. 30.44 BFCL at 1B is exceptional. ~39 tok/s predicted. Perfect for rapid tool routing.",
+    "test_date": "2026-03-24",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ],
+    "jetson_settings": {
+      "ctx_size": 4096,
+      "n_gpu_layers": 99,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-1B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+    },
+    "thinking_metrics": {
+      "honors_no_think": true,
+      "thinking_chars": 0,
+      "thinking_ratio": 0.0
+    },
+    "thinking_quality": {
+      "gen_tps": 32.02,
+      "thinking_chars": 0,
+      "response_chars": 1517
+    }
+  },
+  {
+    "model": "Granite-3.2-8B-Instruct",
+    "params_b": 8.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 5.0,
+    "status": "candidate",
+    "tier": 2,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 9.4,
+    "prompt_tps": null,
+    "bfcl_v4": 26.87,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 79.77,
+    "bfcl_multiple": 60.33,
+    "bfcl_parallel": 75.0,
+    "bfcl_multi_turn": 12.47,
+    "bfcl_web_search": 0.5,
+    "bfcl_irrelevance": 7.38,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Apache-2.0",
+    "provider": "IBM",
+    "gguf_source": null,
+    "notes": "IBM's enterprise-focused model. Apache-2.0 license. Solid baseline.",
+    "test_date": null,
+    "recommended_roles": [
+      "writer"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Command-R7B",
+    "params_b": 7.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 4.5,
+    "status": "candidate",
+    "tier": 1,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 10.4,
+    "prompt_tps": null,
+    "bfcl_v4": 32.07,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 80.96,
+    "bfcl_multiple": 69.06,
+    "bfcl_parallel": 68.75,
+    "bfcl_multi_turn": 5.16,
+    "bfcl_web_search": 27.0,
+    "bfcl_irrelevance": 8.25,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "cc-by-nc-4.0",
+    "provider": "Cohere",
+    "gguf_source": null,
+    "notes": "Best web search score (27%) among sub-10B models. RAG-optimized.",
+    "test_date": null,
+    "recommended_roles": [
+      "researcher"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "CoALM-8B",
+    "params_b": 8.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 5.0,
+    "status": "candidate",
+    "tier": 2,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 9.4,
+    "prompt_tps": null,
+    "bfcl_v4": 26.81,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 84.87,
+    "bfcl_multiple": 66.77,
+    "bfcl_parallel": 87.5,
+    "bfcl_multi_turn": 2.8,
+    "bfcl_web_search": 0.0,
+    "bfcl_irrelevance": 8.0,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Llama 3 based, UIUC fine-tune",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Meta Llama 3 Community",
+    "provider": "UIUC + Oumi",
+    "gguf_source": null,
+    "notes": "Academic fine-tune. 87.5% parallel FC. Weak multi-turn.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Qwen3-1.7B",
+    "params_b": 1.7,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 1.71,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 32.58,
+    "gen_tps_predicted": 23.5,
+    "prompt_tps": null,
+    "bfcl_v4": 28.41,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 82.92,
+    "bfcl_multiple": 74.61,
+    "bfcl_parallel": 81.25,
+    "bfcl_multi_turn": 6.02,
+    "bfcl_web_search": 2.5,
+    "bfcl_irrelevance": 11.0,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling",
+      "thinking"
+    ],
+    "license": "apache-2.0",
+    "provider": "Qwen",
+    "gguf_source": null,
+    "notes": "Excellent for 1.7B — 28.41 BFCL. ~23.5 tok/s predicted. Hot-swap speed candidate.",
+    "test_date": "2026-03-24",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ],
+    "jetson_settings": {
+      "ctx_size": 4096,
+      "n_gpu_layers": 99,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Qwen3-1.7B-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+    },
+    "thinking_metrics": {
+      "honors_no_think": true,
+      "thinking_chars": 0,
+      "thinking_ratio": 0.0
+    },
+    "thinking_quality": {
+      "gen_tps": 31.83,
+      "thinking_chars": 2194,
+      "response_chars": 0
+    }
+  },
+  {
+    "model": "Falcon3-7B-Instruct",
+    "params_b": 7.0,
+    "best_quant": "Q4_K_M",
+    "gguf_size_gb": 4.5,
+    "status": "candidate",
+    "tier": 1,
+    "runtime": null,
+    "gen_tps": null,
+    "gen_tps_predicted": 10.4,
+    "prompt_tps": null,
+    "bfcl_v4": 24.03,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 82.69,
+    "bfcl_multiple": 68.32,
+    "bfcl_parallel": 100.0,
+    "bfcl_multi_turn": 20.65,
+    "bfcl_web_search": 0.5,
+    "bfcl_irrelevance": 5.0,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "falcon-llm-license",
+    "provider": "TII UAE",
+    "gguf_source": null,
+    "notes": "Perfect parallel FC (100%). Decent multi-turn (20.65%). From TII UAE.",
+    "test_date": null,
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ]
+  },
+  {
+    "model": "Granite-4.0-350m",
+    "params_b": 0.35,
+    "best_quant": "Q8_0",
+    "gguf_size_gb": 0.35,
+    "status": "tested",
+    "tier": 1,
+    "runtime": "llama.cpp b8095",
+    "gen_tps": 91.17,
+    "gen_tps_predicted": 117.3,
+    "prompt_tps": null,
+    "bfcl_v4": 18.98,
+    "bfcl_mode": "FC",
+    "bfcl_simple": 67.92,
+    "bfcl_multiple": 46.11,
+    "bfcl_parallel": 81.25,
+    "bfcl_multi_turn": 3.23,
+    "bfcl_web_search": 0.5,
+    "bfcl_irrelevance": 2.5,
+    "provider_livecodebench_v6": null,
+    "provider_gpqa_diamond": null,
+    "provider_ifeval": null,
+    "architecture": "Transformer",
+    "features": [
+      "tool_calling"
+    ],
+    "license": "Apache-2.0",
+    "provider": "IBM",
+    "gguf_source": null,
+    "notes": "Tiniest FC model. 18.98 BFCL at 350M params. ~117 tok/s predicted. Instant routing layer candidate.",
+    "test_date": "2026-03-24",
+    "recommended_roles": [
+      "tool_caller"
+    ],
+    "source_refs": [
+      "bfcl_v4"
+    ],
+    "jetson_settings": {
+      "ctx_size": 4096,
+      "n_gpu_layers": 99,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/granite-4.0-350m-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+    },
+    "thinking_metrics": {
+      "honors_no_think": true,
+      "thinking_chars": 0,
+      "thinking_ratio": 0.0
+    },
+    "thinking_quality": {
+      "gen_tps": 90.52,
+      "thinking_chars": 0,
+      "response_chars": 2097
+    }
+  }
+]

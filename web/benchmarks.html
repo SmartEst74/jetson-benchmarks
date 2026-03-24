@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Jetson LLM Benchmarks — Only Models That Run on 8GB</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2333;--border:#30363d;--green:#39d353;--green2:#26a641;--green3:#1a7f37;--yellow:#f0c000;--red:#f85149;--blue:#58a6ff;--purple:#a371f7;--orange:#f0883e;--text:#e6edf3;--muted:#8b949e;--dim:#484f58;--glow:rgba(57,211,83,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1600px;margin:0 auto;padding:24px 20px}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+nav .logo{font-weight:700;font-size:18px;color:var(--green);display:flex;align-items:center;gap:8px}
+nav .logo svg{width:20px;height:20px;fill:var(--green)}
+nav a{color:var(--muted);font-size:14px;font-weight:500;padding:4px 0;border-bottom:2px solid transparent}
+nav a:hover,nav a.active{color:var(--text);text-decoration:none;border-bottom-color:var(--green)}
+nav .gh{margin-left:auto;color:var(--muted);font-size:13px}
+.hero{padding:40px 0 32px;text-align:center}
+.hero h1{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--muted);max-width:700px;margin:12px auto 0;font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat .val{font-size:28px;font-weight:800;color:var(--green)}
+.stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.stat .timestamp{font-size:10px;color:var(--dim);margin-top:8px}
+.live-indicator{display:flex;align-items:center;gap:6px;margin-left:auto;padding:8px 16px;background:rgba(57,211,83,.1);border:1px solid var(--green3);border-radius:20px;font-size:12px;color:var(--green)}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.controls{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.controls input,.controls select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;outline:none}
+.controls input:focus,.controls select:focus{border-color:var(--green)}
+.controls input{flex:1;min-width:200px}
+.controls select{min-width:160px}
+.legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.tested{background:var(--green)}.dot.candidate{background:var(--yellow)}.dot.rejected{background:var(--red)}
+.charts-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px;margin-bottom:24px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.chart-card h3{font-size:14px;color:var(--muted);margin-bottom:12px;font-weight:600}
+.chart-container{position:relative;height:280px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tbl-wrap{overflow-x:auto;max-height:600px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:var(--surface2);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;cursor:pointer;user-select:none;z-index:10}
+th:hover{color:var(--text)}
+th .arrow{margin-left:4px;font-size:10px;opacity:.5}
+th.sorted .arrow{opacity:1;color:var(--green)}
+tr:hover{background:var(--glow)}
+td.model-name{font-weight:600;color:var(--text)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600}
+.pill.tested{background:rgba(57,211,83,.15);color:var(--green)}
+.pill.candidate{background:rgba(240,192,0,.15);color:var(--yellow)}
+.pill.rejected{background:rgba(248,81,73,.15);color:var(--red)}
+.tier{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;font-size:11px;font-weight:700}
+.tier.t1{background:rgba(57,211,83,.15);color:var(--green)}
+.tier.t2{background:rgba(88,166,255,.15);color:var(--blue)}
+.tier.t3{background:rgba(240,192,0,.15);color:var(--yellow)}
+.tier.t4{background:rgba(248,81,73,.15);color:var(--red)}
+.bar-cell{min-width:120px}
+.bar-bg{background:var(--surface2);border-radius:4px;height:20px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.bar-label{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--text)}
+.notes-cell{white-space:normal;max-width:250px;font-size:12px;color:var(--muted);line-height:1.3}
+.checkbox-col{width:40px;text-align:center}
+.compare-check{width:16px;height:16px;accent-color:var(--green);cursor:pointer}
+.thinking-bar{display:flex;align-items:center;gap:4px}
+.thinking-fill{height:6px;border-radius:3px;transition:width .3s}
+.thinking-label{font-size:10px;color:var(--muted);min-width:35px}
+.comparison-panel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:2px solid var(--green);padding:16px 20px;transform:translateY(100%);transition:transform .3s;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
+.comparison-panel.active{transform:translateY(0)}
+.comparison-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.comparison-header h3{font-size:14px;font-weight:600;color:var(--green)}
+.comparison-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.comparison-model{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px}
+.comparison-model h4{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comparison-model .metric{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
+.comparison-model .metric:last-child{border:none}
+.comparison-model .metric-label{color:var(--muted)}
+.comparison-model .metric-value{font-weight:600}
+.close-compare{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+.close-compare:hover{color:var(--text);border-color:var(--muted)}
+.arch-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px}
+.arch-section h3{font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.arch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.arch-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px}
+.arch-card h4{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:8px}
+.arch-card .arch-stats{display:flex;gap:16px;font-size:12px;color:var(--muted)}
+.arch-card .arch-models{margin-top:8px;font-size:11px;color:var(--dim)}
+.methodology{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin:24px 0;font-size:13px;color:var(--muted)}
+.methodology h3{color:var(--text);margin-bottom:8px;font-size:15px}
+.methodology code{background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--green);font-size:12px}
+.footer{text-align:center;padding:32px 0;color:var(--dim);font-size:12px;border-top:1px solid var(--border);margin-top:40px}
+.filter-group{display:flex;gap:8px;align-items:center}
+.filter-chip{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:16px;font-size:12px;cursor:pointer;transition:all .2s}
+.filter-chip:hover{border-color:var(--green);color:var(--text)}
+.filter-chip.active{background:rgba(57,211,83,.15);border-color:var(--green);color:var(--green)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Jetson LLM Guide</div>
+  <a href="benchmarks.html" class="active">Benchmarks</a>
+  <a href="roles.html">Agent Roles</a>
+  <a href="roadmap.html">Test Roadmap</a>
+  <span class="gh">github.com/SmartEst74/jetson-llm-guide</span>
+  <div class="live-indicator"><span class="live-dot"></span> Live — 30s refresh</div>
+</nav>
+<div class="wrap">
+  <div class="hero">
+    <h1>Jetson Orin Nano Super — LLM Benchmarks</h1>
+    <p>Every model here runs (or is predicted to run) on 8GB unified memory. No cloud models. No impossible configs. Real hardware, real numbers.</p>
+  </div>
+  <div class="stats" id="stats"></div>
+  
+  <div class="charts-section">
+    <div class="chart-card">
+      <h3>Performance vs Model Size (Scatter)</h3>
+      <div class="chart-container"><canvas id="scatterChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>BFCL v4 Scores by Model (Bar)</h3>
+      <div class="chart-container"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Feature Distribution (Doughnut)</h3>
+      <div class="chart-container"><canvas id="doughnutChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Tier Distribution</h3>
+      <div class="chart-container"><canvas id="tierChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input id="search" placeholder="Filter by model, provider, license..." />
+    <select id="filterStatus"><option value="all">All Status</option><option value="tested">Tested</option><option value="candidate">Candidate</option><option value="rejected">Rejected</option></select>
+    <select id="filterTier"><option value="all">All Tiers</option><option value="1">T1 Optimal</option><option value="2">T2 Good</option><option value="3">T3 Tight</option><option value="4">T4 Rejected</option></select>
+    <select id="sortBy"><option value="bfcl_v4">Sort: BFCL v4</option><option value="gen_tps_predicted">Sort: Predicted tok/s</option><option value="gguf_size_gb">Sort: GGUF Size</option><option value="params_b">Sort: Params</option><option value="bfcl_simple">Sort: Simple FC</option><option value="bfcl_parallel">Sort: Parallel FC</option></select>
+  </div>
+  <div class="controls">
+    <span style="color:var(--muted);font-size:12px">Features:</span>
+    <div class="filter-group" id="featureFilters">
+      <button class="filter-chip" data-feature="thinking">🧠 Thinking</button>
+      <button class="filter-chip" data-feature="tool_calling">🔧 Tool Calling</button>
+      <button class="filter-chip" data-feature="json_mode">📋 JSON Mode</button>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="dot tested"></span> Measured on hardware</span>
+    <span><span class="dot candidate"></span> Candidate — predicted perf</span>
+    <span><span class="dot rejected"></span> Tested &amp; rejected</span>
+    <span style="margin-left:auto;color:var(--dim)">Select checkboxes to compare models</span>
+  </div>
+  <div class="card"><div class="tbl-wrap">
+    <table><thead><tr>
+      <th class="checkbox-col"></th>
+      <th data-k="status">Status</th><th data-k="model">Model</th><th data-k="params_b">Params</th><th data-k="best_quant">Quant</th><th data-k="gguf_size_gb">GGUF</th><th data-k="tier">Tier</th><th data-k="architecture">Architecture</th><th data-k="features">Features</th><th data-k="bfcl_v4">BFCL v4<span class="arrow">&#x25BC;</span></th><th data-k="gen_tps_predicted" class="bar-cell">Gen tok/s<span class="arrow">&#x25BC;</span></th><th>Thinking %</th><th data-k="bfcl_simple">Simple FC</th><th data-k="bfcl_multiple">Multiple FC</th><th data-k="bfcl_parallel">Parallel FC</th><th data-k="bfcl_multi_turn">Multi-Turn</th><th data-k="provider">Provider</th><th>Notes</th>
+    </tr></thead><tbody id="tbody"></tbody></table>
+  </div></div>
+
+  <div class="arch-section">
+    <h3>Architecture Insights</h3>
+    <div class="arch-grid" id="archGrid"></div>
+  </div>
+
+  <div class="methodology">
+    <h3>Methodology</h3>
+    <p><strong>Measured performance:</strong> median of 3 runs using <code>scripts/bench-chat.sh</code> with a standardized coding prompt (512 max tokens, temperature 0.6). Timings from llama.cpp <code>timings</code> JSON. MAXN_SUPER mode, <code>jetson_clocks</code> active, cache dropped before each run.</p>
+    <p><strong>Predicted tok/s:</strong> <code>(68 GB/s / GGUF_size_GB) * 0.69</code> — derived from 69% bandwidth efficiency measured on hardware.</p>
+    <p><strong>BFCL v4 scores:</strong> from <a href="https://gorilla.cs.berkeley.edu/leaderboard.html">Berkeley Function Calling Leaderboard</a> (commit f7cf735, 2025-12-16). Qwen3.5-4B (49.7) from model card.</p>
+    <p><strong>Tiers:</strong> T1 &le; 4.5GB (headroom) · T2 = 4.5-6GB (fits) · T3 = 6-7GB (swap risk) · T4 = &gt;7GB or rejected.</p>
+  </div>
+</div>
+<div class="footer">Jetson LLM Guide · BFCL v4, Qwen model cards, measured on Jetson Orin Nano Super 8GB · <a href="https://github.com/SmartEst74/jetson-llm-guide">Source</a></div>
+
+<div class="comparison-panel" id="comparisonPanel">
+  <div class="comparison-header">
+    <h3>Model Comparison (<span id="compareCount">0</span>/4 selected)</h3>
+    <button class="close-compare" onclick="clearComparison()">Clear All</button>
+  </div>
+  <div class="comparison-grid" id="comparisonGrid"></div>
+</div>
+
+<script>
+let models=[];
+let sortKey='bfcl_v4';
+let sortAsc=false;
+let selectedModels=new Set();
+let charts={};
+let activeFeatures=new Set();
+let lastUpdated=null;
+let pollInterval=null;
+
+function num(v){return v===null||v===undefined||v===''?-Infinity:Number(v)}
+function fmt(v){return v===null||v===undefined?'—':v}
+function pct(v,max){return v==null?0:Math.max(0,Math.min(100,(v/max)*100))}
+
+function getArchitectureFamily(arch){
+  if(!arch)return 'Other';
+  const lower=arch.toLowerCase();
+  if(lower.includes('llama'))return 'LLaMA';
+  if(lower.includes('moe')||lower.includes('mixture'))return 'MoE';
+  if(lower.includes('delta'))return 'DeltaNet';
+  if(lower.includes('gated'))return 'Gated';
+  if(lower.includes('transformer'))return 'Transformer';
+  if(lower.includes('agent'))return 'Agent-optimized';
+  if(lower.includes('fine-tuned'))return 'Fine-tuned';
+  return 'Other';
+}
+
+function toggleFeature(feature){
+  if(activeFeatures.has(feature))activeFeatures.delete(feature);
+  else activeFeatures.add(feature);
+  document.querySelectorAll('.filter-chip').forEach(c=>{
+    c.classList.toggle('active',activeFeatures.has(c.dataset.feature));
+  });
+  render();
+}
+
+function toggleCompare(modelName){
+  if(selectedModels.has(modelName)){
+    selectedModels.delete(modelName);
+  }else if(selectedModels.size<4){
+    selectedModels.add(modelName);
+  }
+  updateComparison();
+  render();
+}
+
+function updateComparison(){
+  const panel=document.getElementById('comparisonPanel');
+  const grid=document.getElementById('comparisonGrid');
+  const count=document.getElementById('compareCount');
+  count.textContent=selectedModels.size;
+  
+  if(selectedModels.size===0){
+    panel.classList.remove('active');
+    return;
+  }
+  panel.classList.add('active');
+  
+  const selected=models.filter(m=>selectedModels.has(m.model));
+  grid.innerHTML=selected.map(m=>{
+    const thinkingRatio=m.thinking_metrics?Math.round(m.thinking_metrics.thinking_ratio*100)+'%':'N/A';
+    const thinkingChars=m.thinking_metrics?m.thinking_metrics.thinking_chars:'—';
+    return `<div class="comparison-model">
+      <h4>${m.model}</h4>
+      <div class="metric"><span class="metric-label">Status</span><span class="metric-value"><span class="pill ${m.status}">${m.status}</span></span></div>
+      <div class="metric"><span class="metric-label">Params</span><span class="metric-value">${m.params_b}B</span></div>
+      <div class="metric"><span class="metric-label">GGUF Size</span><span class="metric-value">${m.gguf_size_gb} GB</span></div>
+      <div class="metric"><span class="metric-label">Tier</span><span class="metric-value">T${m.tier}</span></div>
+      <div class="metric"><span class="metric-label">BFCL v4</span><span class="metric-value">${m.bfcl_v4||'—'}</span></div>
+      <div class="metric"><span class="metric-label">Gen tok/s</span><span class="metric-value">${m.gen_tps||'~'+m.gen_tps_predicted}</span></div>
+      <div class="metric"><span class="metric-label">Simple FC</span><span class="metric-value">${fmt(m.bfcl_simple)}</span></div>
+      <div class="metric"><span class="metric-label">Parallel FC</span><span class="metric-value">${fmt(m.bfcl_parallel)}</span></div>
+      <div class="metric"><span class="metric-label">Multi-Turn</span><span class="metric-value">${fmt(m.bfcl_multi_turn)}</span></div>
+      <div class="metric"><span class="metric-label">Thinking %</span><span class="metric-value">${thinkingRatio}</span></div>
+      <div class="metric"><span class="metric-label">Thinking Chars</span><span class="metric-value">${thinkingChars}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function clearComparison(){
+  selectedModels.clear();
+  updateComparison();
+  render();
+}
+
+function initCharts(){
+  const colors={
+    tested:'#39d353',
+    candidate:'#f0c000',
+    rejected:'#f85149',
+    blue:'#58a6ff',
+    purple:'#a371f7',
+    orange:'#f0883e'
+  };
+
+  // Scatter Chart: Performance vs Size
+  const scatterCtx=document.getElementById('scatterChart').getContext('2d');
+  charts.scatter=new Chart(scatterCtx,{
+    type:'scatter',
+    data:{
+      datasets:[
+        {label:'Tested',data:[],backgroundColor:colors.tested,pointRadius:6},
+        {label:'Candidate',data:[],backgroundColor:colors.candidate,pointRadius:5},
+        {label:'Rejected',data:[],backgroundColor:colors.rejected,pointRadius:5}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{title:{display:true,text:'GGUF Size (GB)',color:'#8b949e'},grid:{color:'#30363d'},ticks:{color:'#8b949e'}},
+        y:{title:{display:true,text:'Gen tok/s',color:'#8b949e'},grid:{color:'#30363d'},ticks:{color:'#8b949e'}}
+      },
+      plugins:{legend:{labels:{color:'#8b949e'}}}
+    }
+  });
+
+  // Bar Chart: BFCL v4 Scores
+  const barCtx=document.getElementById('barChart').getContext('2d');
+  charts.bar=new Chart(barCtx,{
+    type:'bar',
+    data:{
+      labels:[],
+      datasets:[{
+        label:'BFCL v4',
+        data:[],
+        backgroundColor:[],
+        borderRadius:4
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{grid:{color:'#30363d'},ticks:{color:'#8b949e'}},
+        y:{grid:{display:false},ticks:{color:'#e6edf3',font:{size:11}}}
+      },
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  // Doughnut Chart: Features
+  const doughnutCtx=document.getElementById('doughnutChart').getContext('2d');
+  charts.doughnut=new Chart(doughnutCtx,{
+    type:'doughnut',
+    data:{
+      labels:['Thinking','Tool Calling','JSON Mode','None'],
+      datasets:[{
+        data:[0,0,0,0],
+        backgroundColor:[colors.blue,colors.purple,colors.orange,'#484f58'],
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'right',labels:{color:'#8b949e',padding:12}}}
+    }
+  });
+
+  // Tier Distribution Chart
+  const tierCtx=document.getElementById('tierChart').getContext('2d');
+  charts.tier=new Chart(tierCtx,{
+    type:'doughnut',
+    data:{
+      labels:['T1 Optimal','T2 Good','T3 Tight','T4 Rejected'],
+      datasets:[{
+        data:[0,0,0,0],
+        backgroundColor:[colors.tested,colors.blue,colors.candidate,colors.rejected],
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'right',labels:{color:'#8b949e',padding:12}}}
+    }
+  });
+}
+
+function updateCharts(){
+  // Update scatter
+  const testedData=models.filter(m=>m.status==='tested').map(m=>({x:m.gguf_size_gb,y:m.gen_tps||m.gen_tps_predicted,label:m.model}));
+  const candidateData=models.filter(m=>m.status==='candidate').map(m=>({x:m.gguf_size_gb,y:m.gen_tps_predicted,label:m.model}));
+  const rejectedData=models.filter(m=>m.status==='rejected').map(m=>({x:m.gguf_size_gb,y:m.gen_tps||m.gen_tps_predicted,label:m.model}));
+  charts.scatter.data.datasets[0].data=testedData;
+  charts.scatter.data.datasets[1].data=candidateData;
+  charts.scatter.data.datasets[2].data=rejectedData;
+  charts.scatter.update();
+
+  // Update bar - top 10 by BFCL v4
+  const withBfcl=models.filter(m=>m.bfcl_v4).sort((a,b)=>b.bfcl_v4-a.bfcl_v4).slice(0,10);
+  charts.bar.data.labels=withBfcl.map(m=>m.model.length>20?m.model.substring(0,17)+'...':m.model);
+  charts.bar.data.datasets[0].data=withBfcl.map(m=>m.bfcl_v4);
+  charts.bar.data.datasets[0].backgroundColor=withBfcl.map(m=>m.status==='tested'?colors.tested:m.status==='rejected'?colors.rejected:colors.candidate);
+  charts.bar.update();
+
+  // Update doughnut - features
+  let thinking=0,toolCalling=0,jsonMode=0,none=0;
+  models.forEach(m=>{
+    const f=m.features||[];
+    if(f.includes('thinking'))thinking++;
+    if(f.includes('tool_calling'))toolCalling++;
+    if(f.includes('json_mode'))jsonMode++;
+    if(f.length===0)none++;
+  });
+  charts.doughnut.data.datasets[0].data=[thinking,toolCalling,jsonMode,none];
+  charts.doughnut.update();
+
+  // Update tier distribution
+  let t1=0,t2=0,t3=0,t4=0;
+  models.forEach(m=>{
+    if(m.tier===1)t1++;
+    else if(m.tier===2)t2++;
+    else if(m.tier===3)t3++;
+    else if(m.tier===4)t4++;
+  });
+  charts.tier.data.datasets[0].data=[t1,t2,t3,t4];
+  charts.tier.update();
+}
+
+const colors={tested:'#39d353',candidate:'#f0c000',rejected:'#f85149'};
+
+function renderArchInsights(){
+  const families={};
+  models.forEach(m=>{
+    const fam=getArchitectureFamily(m.architecture);
+    if(!families[fam])families[fam]={count:0,bestBfcl:0,bestTps:0,models:[]};
+    families[fam].count++;
+    if(m.bfcl_v4&&m.bfcl_v4>families[fam].bestBfcl)families[fam].bestBfcl=m.bfcl_v4;
+    const tps=m.gen_tps||m.gen_tps_predicted;
+    if(tps&&tps>families[fam].bestTps)families[fam].bestTps=tps;
+    families[fam].models.push(m.model);
+  });
+
+  const grid=document.getElementById('archGrid');
+  grid.innerHTML=Object.entries(families).sort((a,b)=>b[1].count-a[1].count).map(([fam,data])=>{
+    return `<div class="arch-card">
+      <h4>${fam}</h4>
+      <div class="arch-stats">
+        <span>${data.count} models</span>
+        <span>Best BFCL: ${data.bestBfcl||'—'}</span>
+        <span>Best tok/s: ${data.bestTps||'—'}</span>
+      </div>
+      <div class="arch-models">${data.models.slice(0,4).join(', ')}${data.models.length>4?'...':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const fs=document.getElementById('filterStatus').value;
+  const ft=document.getElementById('filterTier').value;
+  const sb=document.getElementById('sortBy').value;
+  if(sb!==sortKey){sortKey=sb;sortAsc=sb==='gguf_size_gb'||sb==='params_b';}
+  
+  let filtered=models.filter(m=>{
+    if(fs!=='all'&&m.status!==fs)return false;
+    if(ft!=='all'&&String(m.tier)!==ft)return false;
+    if(q&&!JSON.stringify(m).toLowerCase().includes(q))return false;
+    if(activeFeatures.size>0){
+      const f=m.features||[];
+      for(const feat of activeFeatures){
+        if(!f.includes(feat))return false;
+      }
+    }
+    return true;
+  }).sort((a,b)=>{const av=num(a[sortKey]),bv=num(b[sortKey]);return sortAsc?(av-bv):(bv-av);});
+  
+  const tested=models.filter(m=>m.status==='tested'&&m.gen_tps).length;
+  const candidates=models.filter(m=>m.status==='candidate').length;
+  const bestBfcl=Math.max(...models.filter(m=>m.bfcl_v4).map(m=>m.bfcl_v4));
+  const bestTps=Math.max(...models.filter(m=>m.gen_tps).map(m=>m.gen_tps));
+  const withThinking=models.filter(m=>m.features&&m.features.includes('thinking')).length;
+  
+  const timestamp=lastUpdated?'Last updated: '+lastUpdated.toLocaleTimeString():'Loading...';
+  
+  document.getElementById('stats').innerHTML=
+    '<div class="stat"><div class="val">'+tested+'</div><div class="label">Tested on Hardware</div><div class="timestamp">'+timestamp+'</div></div>'+
+    '<div class="stat"><div class="val">'+candidates+'</div><div class="label">Candidates to Test</div></div>'+
+    '<div class="stat"><div class="val">'+bestBfcl+'</div><div class="label">Best BFCL v4</div></div>'+
+    '<div class="stat"><div class="val">'+bestTps+' tok/s</div><div class="label">Best Measured Gen</div></div>'+
+    '<div class="stat"><div class="val">'+withThinking+'</div><div class="label">Thinking Models</div></div>'+
+    '<div class="stat"><div class="val">68 GB/s</div><div class="label">Memory Bandwidth</div></div>';
+  
+  const maxTps=Math.max(...filtered.map(m=>num(m.gen_tps_predicted)).filter(v=>v>0),1);
+  
+  document.getElementById('tbody').innerHTML=filtered.map(m=>{
+    const tps=m.gen_tps||m.gen_tps_predicted;
+    const tpsLabel=m.gen_tps?''+m.gen_tps:'~'+m.gen_tps_predicted;
+    const tpsPct=pct(tps,maxTps);
+    const barColor=m.status==='tested'?'var(--green)':m.status==='rejected'?'var(--red)':'var(--yellow)';
+    const features=m.features?m.features.map(f=>{
+      const icons={'thinking':'🧠','tool_calling':'🔧','json_mode':'📋'};
+      return icons[f]||f;
+    }).join(' '):'';
+    const arch=m.architecture||'';
+    const archShort=arch.length>20?arch.substring(0,17)+'...':arch;
+    const thinkingRatio=m.thinking_metrics?Math.round(m.thinking_metrics.thinking_ratio*100):null;
+    const hasThinkingData=thinkingRatio!==null;
+    const checked=selectedModels.has(m.model)?'checked':'';
+    
+    return '<tr>'+
+      '<td class="checkbox-col"><input type="checkbox" class="compare-check" onchange="toggleCompare(\''+m.model.replace(/'/g,"\\'")+'\')" '+checked+'></td>'+
+      '<td><span class="pill '+m.status+'">'+(m.status==='tested'?'Tested':m.status==='candidate'?'Next':'No')+'</span></td>'+
+      '<td class="model-name">'+m.model+'</td><td>'+m.params_b+'B</td><td>'+m.best_quant+'</td><td>'+m.gguf_size_gb+' GB</td>'+
+      '<td><span class="tier t'+m.tier+'">T'+m.tier+'</span></td>'+
+      '<td title="'+arch+'">'+archShort+'</td>'+
+      '<td>'+features+'</td>'+
+      '<td>'+(m.bfcl_v4!==null?'<strong>'+m.bfcl_v4+'</strong>':'—')+'</td>'+
+      '<td class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:'+tpsPct+'%;background:'+barColor+'"></div><div class="bar-label">'+(tps!=null?tpsLabel:'—')+'</div></div></td>'+
+      '<td class="thinking-bar">'+(hasThinkingData?'<div style="display:flex;align-items:center;gap:4px"><div style="background:var(--surface2);border-radius:3px;width:60px;height:6px;position:relative"><div class="thinking-fill" style="width:'+thinkingRatio+'%;background:var(--blue);height:100%;border-radius:3px"></div></div><span class="thinking-label">'+thinkingRatio+'%</span></div>':'<span style="color:var(--dim)">—</span>')+'</td>'+
+      '<td>'+fmt(m.bfcl_simple)+'</td><td>'+fmt(m.bfcl_multiple)+'</td><td>'+fmt(m.bfcl_parallel)+'</td><td>'+fmt(m.bfcl_multi_turn)+'</td>'+
+      '<td>'+m.provider+'</td><td class="notes-cell">'+(m.notes||'')+'</td></tr>';
+  }).join('');
+  
+  document.querySelectorAll('th').forEach(th=>{
+    th.classList.toggle('sorted',th.dataset.k===sortKey);
+    const a=th.querySelector('.arrow');
+    if(a)a.textContent=th.dataset.k===sortKey?(sortAsc?'\u25B2':'\u25BC'):'\u25BC';
+  });
+  
+  updateCharts();
+  renderArchInsights();
+  updateComparison();
+}
+
+async function fetchModels(){
+  try{
+    const r=await fetch('../data/jetson-models.json?t='+Date.now());
+    const d=await r.json();
+    models=d;
+    lastUpdated=new Date();
+    render();
+  }catch(e){
+    document.getElementById('tbody').innerHTML='<tr><td colspan="17">Failed to load: '+e.message+'</td></tr>';
+  }
+}
+
+// Event listeners
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('filterStatus').addEventListener('change',render);
+document.getElementById('filterTier').addEventListener('change',render);
+document.getElementById('sortBy').addEventListener('change',render);
+
+document.querySelectorAll('.filter-chip').forEach(chip=>{
+  chip.addEventListener('click',()=>toggleFeature(chip.dataset.feature));
+});
+
+document.querySelectorAll('th[data-k]').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const k=th.dataset.k;
+    if(sortKey===k)sortAsc=!sortAsc;
+    else{sortKey=k;sortAsc=k==='gguf_size_gb'||k==='params_b'||k==='model'||k==='best_quant'||k==='provider';}
+    document.getElementById('sortBy').value=sortKey;
+    render();
+  });
+});
+
+// Initialize
+initCharts();
+fetchModels();
+
+// Real-time polling every 30 seconds
+pollInterval=setInterval(fetchModels,30000);
+</script>
+</body>
+</html>

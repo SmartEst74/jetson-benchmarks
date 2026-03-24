@@ -1,0 +1,836 @@
+{
+  "source": "https://github.com/msitarzewski/agency-agents",
+  "license": "MIT",
+  "description": "Benchmark tasks for real agency-agents roles from @msitarzewski. Each role is tested with domain-specific prompts that measure how well an LLM performs when acting as that specialized agent.",
+  "roles": [
+    {
+      "id": "frontend_developer",
+      "name": "Frontend Developer",
+      "icon": "🖥️",
+      "source_file": "engineering/engineering-frontend-developer.md",
+      "description": "Modern web application and UI implementation specialist. Builds responsive, accessible, performant web apps with React/Vue/Angular.",
+      "key_metric": "provider_livecodebench_v6",
+      "secondary_metrics": [
+        "bfcl_v4",
+        "provider_ifeval"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "fe_1",
+          "name": "React Data Table Component",
+          "difficulty": 4,
+          "prompt": "Build a React TypeScript component for a virtualized data table with 10,000+ rows. Requirements: sortable columns (click header to toggle asc/desc), filterable with search input, proper ARIA labels (role='table', role='row', role='cell'), keyboard navigation between rows, responsive (stacks on mobile). Use @tanstack/react-virtual. Include full component code with types.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Component renders, virtualization works, sorting/filtering functional, types correct"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 5 requirements implemented: virtualization, sort, filter, a11y, responsive"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "TypeScript types, memo/useCallback, clean separation"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Handles empty data, debounced filter, sort edge cases"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Props interface documented, usage example"
+            }
+          }
+        },
+        {
+          "id": "fe_2",
+          "name": "CSS Animation System",
+          "difficulty": 3,
+          "prompt": "Create a CSS-only animation system for a card component with these states: idle (subtle float), hover (lift + shadow), active (press down), loading (shimmer skeleton). Use CSS custom properties for timing/easing configuration. Must respect prefers-reduced-motion. Include the HTML structure and complete CSS.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "All 4 states animate correctly, transitions smooth, custom properties work"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All states, custom properties, prefers-reduced-motion media query"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Clean CSS, no magic numbers, maintainable custom property system"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Reduced motion fallback is meaningful, not just animation:none"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Custom property reference table provided"
+            }
+          }
+        },
+        {
+          "id": "fe_3",
+          "name": "Performance Audit Fix",
+          "difficulty": 5,
+          "prompt": "This React app has terrible Lighthouse scores. Diagnose and fix:\n\n```tsx\nimport React from 'react';\nimport moment from 'moment';\nimport _ from 'lodash';\n\nexport default function Dashboard({ data }) {\n  const sorted = _.sortBy(data, 'date');\n  const formatted = sorted.map(item => ({\n    ...item,\n    date: moment(item.date).format('MMM DD, YYYY'),\n    amount: new Intl.NumberFormat().format(item.amount)\n  }));\n  \n  return (\n    <div>\n      <img src=\"/hero-4000x3000.png\" />\n      {formatted.map((item, i) => (\n        <div key={i} onClick={() => window.location.href = `/detail/${item.id}`}>\n          <h3>{item.title}</h3>\n          <p>{item.date} - ${item.amount}</p>\n        </div>\n      ))}\n    </div>\n  );\n}\n```\n\nIdentify all performance issues and provide the optimized version.",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Identifies: moment/lodash bundle size, unoptimized image, key={i}, sort on every render, no memoization"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "At least 6 issues found: bundle, image, key, sort, memo, navigation, missing lazy load"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Fixed version uses: date-fns/native sort, next/image or srcset, proper keys, useMemo, Link"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Explains Lighthouse impact of each fix"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Before/after bundle size or score estimate"
+            }
+          }
+        }
+      ],
+      "recommendation_reason": "BFCL: 51.4, Speed: 17.2 tok/s, Params: 3.0B, Score: 72.2"
+    },
+    {
+      "id": "backend_architect",
+      "name": "Backend Architect",
+      "icon": "🏗️",
+      "source_file": "engineering/engineering-backend-architect.md",
+      "description": "System architecture and server-side development specialist. Designs scalable database schemas, APIs, and cloud infrastructure.",
+      "key_metric": "provider_gpqa_diamond",
+      "secondary_metrics": [
+        "provider_livecodebench_v6",
+        "provider_ifeval"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "be_1",
+          "name": "Database Schema Design",
+          "difficulty": 4,
+          "prompt": "Design a PostgreSQL schema for a multi-tenant SaaS project management tool. Requirements: tenant isolation via row-level security, projects with tasks (nested subtasks), team members with roles (admin/manager/member), activity audit log, file attachments with metadata. Include: CREATE TABLE statements with proper types and constraints, indexes for common queries (tasks by project, tasks by assignee, activity by date range), and the RLS policies. Optimize for a read-heavy workload with 100k+ tasks per tenant.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Valid SQL, RLS policies work, foreign keys correct, indexes useful"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All entities: tenants, projects, tasks (recursive), members, roles, audit log, attachments"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Proper types (UUID, TIMESTAMPTZ, JSONB where appropriate), naming conventions consistent"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Handles: subtask depth, soft deletes, concurrent access, large attachment metadata"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Index justification, query pattern notes"
+            }
+          }
+        },
+        {
+          "id": "be_2",
+          "name": "API Rate Limiter Design",
+          "difficulty": 5,
+          "prompt": "Design and implement a distributed rate limiter in Python that supports: sliding window algorithm, per-user and per-endpoint limits, burst allowance (token bucket), Redis-backed for distributed deployment, graceful degradation if Redis is down (fallback to local), proper HTTP headers (X-RateLimit-Remaining, Retry-After). Provide the implementation as a FastAPI middleware.",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Sliding window math correct, token bucket logic right, Redis ops atomic (MULTI/EXEC or Lua)"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 6 requirements: sliding window, per-user+endpoint, burst, Redis, fallback, headers"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Clean middleware pattern, async Redis ops, proper error handling"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Redis failure doesn't crash app, race conditions handled, clock skew considered"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Configuration examples, rate limit strategy explanation"
+            }
+          }
+        },
+        {
+          "id": "be_3",
+          "name": "Event-Driven Architecture",
+          "difficulty": 4,
+          "prompt": "Design an event-driven order processing system. Components: Order Service, Payment Service, Inventory Service, Notification Service. Requirements: eventual consistency, idempotent event handlers, dead letter queue for failed events, event schema with versioning, compensation (saga) pattern for payment failures that trigger inventory rollback. Provide: event schemas (JSON), service interaction diagram (text-based), and the saga orchestrator pseudocode.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Event flow correct, saga compensation handles all failure modes, idempotency keys present"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 4 services interact, DLQ documented, schema versioning shown, saga covers payment+inventory rollback"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Event schemas well-typed, versioning strategy clear (v1/v2 coexistence), pseudocode implementable"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Handles: partial failures, duplicate events, out-of-order delivery, service timeout"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Clear interaction diagram, failure scenarios enumerated"
+            }
+          }
+        }
+      ],
+      "recommendation_reason": "BFCL: 51.4, Speed: 17.2 tok/s, Params: 3.0B, Score: 68.6"
+    },
+    {
+      "id": "code_reviewer",
+      "name": "Code Reviewer",
+      "icon": "👁️",
+      "source_file": "engineering/engineering-code-reviewer.md",
+      "description": "Code review specialist providing constructive, actionable feedback on correctness, security, maintainability, and performance.",
+      "key_metric": "provider_gpqa_diamond",
+      "secondary_metrics": [
+        "provider_livecodebench_v6"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "cr_1",
+          "name": "Security-focused Code Review",
+          "difficulty": 5,
+          "prompt": "Review this Python endpoint for ALL issues. Use priority markers (blocker/suggestion/nit):\n\n```python\n@app.route('/api/query', methods=['POST'])\ndef query():\n    data = request.json\n    sql = f\"SELECT * FROM users WHERE name = '{data['name']}' AND role = '{data['role']}'\"\n    result = db.execute(sql)\n    token = jwt.encode({'user': data['name']}, 'secret123', algorithm='HS256')\n    response = make_response(jsonify({'data': result.fetchall(), 'token': token}))\n    response.headers['Access-Control-Allow-Origin'] = '*'\n    return response\n```",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Identifies ALL: SQL injection, hardcoded JWT secret, permissive CORS, no input validation, no auth, data exposure"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "6+ vulnerabilities with OWASP mapping, fix for each"
+            },
+            "code_quality": {
+              "weight": 0.15,
+              "rubric": "Uses parameterized queries, env secrets, specific CORS, input validation in fixes"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Prioritizes by severity, provides corrected code"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Uses blocker/suggestion/nit markers consistently"
+            }
+          }
+        },
+        {
+          "id": "cr_2",
+          "name": "Performance Code Review",
+          "difficulty": 4,
+          "prompt": "Review this Python function for performance issues and provide an optimized version:\n\n```python\ndef process_large_file(path):\n    with open(path) as f:\n        lines = f.readlines()\n    results = []\n    for line in lines:\n        data = json.loads(line)\n        if data['timestamp'] > '2024-01-01':\n            for prev in results:\n                if prev['id'] == data['id']:\n                    prev['count'] += 1\n                    break\n            else:\n                results.append({'id': data['id'], 'count': 1})\n    results.sort(key=lambda x: x['count'], reverse=True)\n    return results[:100]\n```",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Finds: O(n^2) nested loop, full file in memory, string date comparison, sort vs heapq"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "4+ issues found with fixes: streaming reads, dict lookup, datetime parse, heapq.nlargest"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Refactored version correct and idiomatic"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Complexity improvement quantified"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Before/after O() analysis"
+            }
+          }
+        },
+        {
+          "id": "cr_3",
+          "name": "Shell Script Safety Review",
+          "difficulty": 3,
+          "prompt": "Review this deployment script for safety and correctness issues:\n\n```bash\n#!/bin/bash\nMODEL=$1\ndocker stop $(docker ps -q)\ndocker rm $(docker ps -aq)\nrm -rf /tmp/model-cache/*\nwget -O /models/$MODEL.gguf https://huggingface.co/downloads/$MODEL\ndocker run -d --gpus all -v /models:/data server --model /data/$MODEL.gguf\necho \"Deployed $MODEL\"\n```",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Finds: unquoted $1, blind docker stop all, rm -rf, no checksum, no error handling, no set -euo pipefail"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "7+ issues: input validation, quoting, blast radius, cleanup, wget verify, error handling, logging"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Fixed version with validation, specific container, checksum, trap, set -euo pipefail"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Handles wget/docker failure, model already loaded"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Severity ratings per issue"
+            }
+          }
+        }
+      ],
+      "recommendation_reason": "BFCL: 51.4, Speed: 17.2 tok/s, Params: 3.0B, Score: 68.6"
+    },
+    {
+      "id": "security_engineer",
+      "name": "Security Engineer",
+      "icon": "🔒",
+      "source_file": "engineering/engineering-security-engineer.md",
+      "description": "Application security specialist. Threat modeling, OWASP analysis, secure code review, security architecture design.",
+      "key_metric": "provider_gpqa_diamond",
+      "secondary_metrics": [
+        "provider_livecodebench_v6",
+        "bfcl_v4"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "sec_1",
+          "name": "Threat Model STRIDE Analysis",
+          "difficulty": 5,
+          "prompt": "Perform a STRIDE threat model for this architecture: A Jetson edge device runs an LLM inference API (HTTP, port 8000) on a local network. Users SSH in to manage models. A hot-swap API (port 8001) switches models based on agent role requests. Models are stored on NVMe. The device has no firewall configured. Network includes IoT devices on the same subnet.\n\nFor each STRIDE category (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege), identify at least 2 threats with severity (Critical/High/Medium/Low) and concrete mitigations.",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Threats realistic and specific to the architecture (not generic), severities appropriate"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 6 STRIDE categories with 2+ threats each = 12+ total threats with mitigations"
+            },
+            "code_quality": {
+              "weight": 0.15,
+              "rubric": "Mitigations are specific (e.g., 'iptables rule to restrict port 8000 to VLAN X' not 'add firewall')"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Considers IoT lateral movement, SSH key management, model poisoning, API abuse"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Structured table or list format, actionable priority order"
+            }
+          }
+        },
+        {
+          "id": "sec_2",
+          "name": "Secure API Endpoint",
+          "difficulty": 4,
+          "prompt": "This FastAPI endpoint handles model uploads for a Jetson device. Find all security issues and provide the hardened version:\n\n```python\n@app.post('/upload-model')\nasync def upload_model(file: UploadFile, model_name: str):\n    path = f'/models/{model_name}.gguf'\n    with open(path, 'wb') as f:\n        content = await file.read()\n        f.write(content)\n    os.chmod(path, 0o777)\n    return {'path': path, 'size': len(content)}\n```",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Finds: path traversal, no size limit (OOM), 777 permissions, no auth, no file type validation, no checksum"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "6+ issues with fixes: sanitize name, size limit, 644 perms, auth middleware, magic byte check, streaming write"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Hardened version uses pathlib, streaming chunk writes, proper permissions, auth dependency"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Handles partial upload cleanup, concurrent uploads, disk space check"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Each vulnerability explained with attack scenario"
+            }
+          }
+        },
+        {
+          "id": "sec_3",
+          "name": "Security Headers Audit",
+          "difficulty": 3,
+          "prompt": "Audit this nginx configuration for an LLM API proxy and add all missing security headers with explanations:\n\n```nginx\nserver {\n    listen 80;\n    server_name llm.local;\n    \n    location /v1/ {\n        proxy_pass http://127.0.0.1:8000;\n        proxy_set_header Host $host;\n    }\n    \n    location /docs {\n        root /var/www/html;\n        autoindex on;\n    }\n}\n```",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Identifies: no HTTPS, missing security headers, autoindex on, no rate limiting, server tokens visible"
+            },
+            "completeness": {
+              "weight": 0.3,
+              "rubric": "Adds: HSTS, X-Content-Type-Options, X-Frame-Options, CSP, Referrer-Policy, server_tokens off, rate_limit_zone, SSL redirect"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Complete nginx config provided, headers correct, rate limit zone properly configured"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Considers local network context (HSTS may not apply, but still recommended)"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Each header explained with what attack it prevents"
+            }
+          }
+        }
+      ],
+      "recommendation_reason": "BFCL: 51.4, Speed: 17.2 tok/s, Params: 3.0B, Score: 68.6"
+    },
+    {
+      "id": "technical_writer",
+      "name": "Technical Writer",
+      "icon": "📚",
+      "source_file": "engineering/engineering-technical-writer.md",
+      "description": "Developer documentation architect. README files, API references, tutorials, and technical guides.",
+      "key_metric": "provider_ifeval",
+      "secondary_metrics": [
+        "provider_gpqa_diamond"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "tw_1",
+          "name": "Project README",
+          "difficulty": 3,
+          "prompt": "Write a README.md for a Jetson LLM benchmark tool called 'jetson-bench'. Requirements: project title with one-line description, CI/coverage badge placeholders, prerequisites (JetPack 6.2+, Docker, 8GB+ RAM), install section (git clone + docker pull), usage with 3 examples showing different commands and their output, configuration table (6+ options with type/default/description), troubleshooting section with 3 common issues and solutions, contributing link, MIT license badge. Must pass the 5-second test. Under 180 lines.",
+          "grading": {
+            "correctness": {
+              "weight": 0.25,
+              "rubric": "All 8 sections present, valid markdown, badges formatted correctly"
+            },
+            "completeness": {
+              "weight": 0.3,
+              "rubric": "Every specified element included, no TODO placeholders"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Proper markdown hierarchy (h1>h2>h3), code blocks with language tags, table formatting"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Commands realistic, config options sensible, troubleshooting actionable"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Under 180 lines, scannable, passes 5-second test"
+            }
+          }
+        },
+        {
+          "id": "tw_2",
+          "name": "API Reference Documentation",
+          "difficulty": 4,
+          "prompt": "Write OpenAPI 3.1 documentation for a model hot-swap API with these endpoints:\n- POST /api/switch: body {role: string, priority?: 'low'|'medium'|'high'|'critical'} -> {model: string, endpoint: string, swap_time_ms: int, status: 'ready'|'loading'|'error'}\n- GET /api/status: -> {model: string, uptime_s: int, requests_served: int, gpu_temp_c: float}\n- GET /api/models: -> {models: [{name: string, size_gb: float, quantization: string, status: 'loaded'|'available'|'downloading'}]}\n\nInclude: descriptions, request/response schemas with examples, error responses (400, 409, 503), rate limit headers, and 3 curl examples per endpoint.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Valid OpenAPI 3.1 structure, schemas typed correctly, examples match schemas"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 3 endpoints fully documented, all error codes, rate limit headers, 9 curl examples total"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "YAML well-formatted, $ref used for shared schemas, consistent naming"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Error responses realistic (409 swap in progress, 503 model load fail)"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Curl examples syntactically correct and runnable"
+            }
+          }
+        },
+        {
+          "id": "tw_3",
+          "name": "Step-by-Step Tutorial",
+          "difficulty": 3,
+          "prompt": "Write a tutorial: 'Deploy Your First LLM on Jetson in 10 Minutes'. Target audience: developer who has a Jetson but has never run an LLM. Include:\n- What they'll build (working LLM API)\n- Prerequisites checklist with verification commands\n- Step-by-step (6-8 steps) with exact commands\n- Expected output for each step (show what success looks like)\n- 'Try it out' section with example prompts\n- Troubleshooting for 3 common pitfalls\n- Next steps with links",
+          "grading": {
+            "correctness": {
+              "weight": 0.25,
+              "rubric": "Commands work on JetPack 6.2, Docker commands valid, API calls correct"
+            },
+            "completeness": {
+              "weight": 0.3,
+              "rubric": "All sections present, 6-8 steps, expected output shown, troubleshooting actionable"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Markdown well-structured, code blocks with language tags, copy-pasteable commands"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Handles common failures: Docker not running, port in use, OOM"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Beginner-friendly tone, celebrates milestones, under 15 min read"
+            }
+          }
+        }
+      ],
+      "recommendation_reason": "BFCL: 51.4, Speed: 17.2 tok/s, Params: 3.0B, Score: 68.6"
+    },
+    {
+      "id": "ai_engineer",
+      "name": "AI Engineer",
+      "icon": "🤖",
+      "source_file": "engineering/engineering-ai-engineer.md",
+      "description": "AI/ML engineer specializing in model development, deployment, and production integration. MLOps, inference optimization, RAG systems.",
+      "key_metric": "provider_gpqa_diamond",
+      "secondary_metrics": [
+        "provider_livecodebench_v6",
+        "bfcl_v4"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "ai_1",
+          "name": "Edge Inference Optimization",
+          "difficulty": 5,
+          "prompt": "Design an inference optimization pipeline for deploying a 4B parameter LLM on a Jetson Orin Nano Super (8GB unified RAM, 1024 CUDA cores SM 8.7, 68 GB/s memory bandwidth). Cover: quantization strategy selection (GPTQ vs AWQ vs GGUF with tradeoffs), KV cache management for 8K context in limited memory, batching strategy for single-user vs multi-user, thermal management (sustained vs burst inference), and memory budget breakdown (OS + CUDA context + model weights + KV cache + compute scratch). Provide specific numbers.",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Memory math accurate (OS ~1GB, CUDA ~0.5GB, model ~4GB Q8, KV ~136MB), bandwidth-limited tok/s formula correct"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 5 topics covered: quant strategy, KV management, batching, thermal, memory budget"
+            },
+            "code_quality": {
+              "weight": 0.15,
+              "rubric": "Specific numbers with units, formulas shown, tradeoffs quantified"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Considers unified memory implications, swap pressure, GPU/CPU memory contention"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Actionable recommendations with priority order"
+            }
+          }
+        },
+        {
+          "id": "ai_2",
+          "name": "RAG Pipeline Architecture",
+          "difficulty": 4,
+          "prompt": "Design a RAG (Retrieval Augmented Generation) system that runs entirely on a single Jetson device with 8GB RAM. The knowledge base is 500 technical documents (~50MB text). Cover: embedding model selection (must fit alongside LLM), vector store choice (FAISS vs ChromaDB vs SQLite-VSS with memory implications), chunking strategy, retrieval pipeline, prompt construction with retrieved context, and the complete Python implementation of the retrieval + generation pipeline.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Memory budget realistic (embedding model + vector index + LLM must fit in 8GB), retrieval pipeline works"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 6 components: embedding choice, vector store, chunking, retrieval, prompt construction, implementation"
+            },
+            "code_quality": {
+              "weight": 0.25,
+              "rubric": "Implementation is runnable Python, proper error handling, efficient memory use"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Handles: empty results, context too long, embedding model OOM, concurrent queries"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Memory budget table, performance expectations stated"
+            }
+          }
+        },
+        {
+          "id": "ai_3",
+          "name": "Model Evaluation Framework",
+          "difficulty": 4,
+          "prompt": "Design a benchmark framework that evaluates LLMs across multiple agent roles on edge hardware. Requirements: role-specific prompt sets with grading rubrics, automated scoring (regex + LLM-as-judge), statistical rigor (3+ runs, median + stddev), hardware metrics collection (tok/s, memory, temperature, power), result comparison across models, and exportable reports. Provide the Python class structure and the scoring pipeline.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Statistical methodology sound (median for tok/s, mean for quality), scoring pipeline separates generation from evaluation"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 6 requirements: role prompts, auto scoring, statistics, hardware metrics, comparison, reports"
+            },
+            "code_quality": {
+              "weight": 0.25,
+              "rubric": "Clean class hierarchy, async benchmark runner, JSON result format"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Handles model crash, timeout, inconsistent output formats"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Usage example, result format documented"
+            }
+          }
+        }
+      ],
+      "recommendation_reason": "BFCL: 51.4, Speed: 17.2 tok/s, Params: 3.0B, Score: 68.6"
+    },
+    {
+      "id": "performance_benchmarker",
+      "name": "Performance Benchmarker",
+      "icon": "⏱️",
+      "source_file": "testing/testing-performance-benchmarker.md",
+      "description": "Performance testing and optimization specialist. Load testing, bottleneck analysis, metrics-driven optimization recommendations.",
+      "key_metric": "provider_gpqa_diamond",
+      "secondary_metrics": [
+        "provider_ifeval"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "pb_1",
+          "name": "Inference Performance Analysis",
+          "difficulty": 4,
+          "prompt": "Analyze this LLM inference performance data and provide optimization recommendations:\n\nDevice: Jetson Orin Nano Super 8GB\nModel: Qwen3.5-4B Q8_0 (4.48 GB)\nRuntime: llama.cpp b8095\n\nResults (5 runs, coding prompt 512 tokens):\n- Generation: 10.2, 10.5, 10.4, 10.6, 10.3 tok/s\n- Prompt processing: 245, 257, 253, 261, 249 tok/s  \n- RAM used: 6.1, 6.1, 6.2, 6.1, 6.1 GiB\n- GPU temp: 58, 61, 63, 65, 62 °C\n- Swap used: 62, 64, 66, 68, 65 MB\n\nTheoretical bandwidth limit: 68 GB/s / 4.48 GB = 15.2 tok/s\nActual efficiency: 10.4/15.2 = 68.4%\n\nExplain: why only 68% efficiency, what the bottleneck is, whether the thermal trend is concerning, what optimizations could close the gap, and whether swapping to NVMe indicates a problem.",
+          "grading": {
+            "correctness": {
+              "weight": 0.35,
+              "rubric": "Identifies memory bandwidth as primary bottleneck, kernel dispatch overhead as efficiency gap, thermal trend mild but worth monitoring"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 5 questions answered: efficiency gap, bottleneck, thermal, optimizations, swap analysis"
+            },
+            "code_quality": {
+              "weight": 0.15,
+              "rubric": "Statistical analysis: mean, stddev, confidence interval for key metrics"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Optimizations realistic for Jetson (flash attention, mlock, context tuning) not 'upgrade hardware'"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Recommendations prioritized by expected impact"
+            }
+          }
+        },
+        {
+          "id": "pb_2",
+          "name": "Load Test Design",
+          "difficulty": 3,
+          "prompt": "Design a load testing plan for an LLM inference API on Jetson (single GPU, one model at a time, max ~10.5 tok/s generation). The API serves agent requests from 6 different roles. Some roles need long responses (500+ tokens) and some need short structured output (50 tokens). Design: test scenarios (baseline, sustained load, burst, role-switching), key metrics to capture, success criteria, test duration, and the k6 or curl-based test script.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Scenarios realistic for single-GPU constraint (queuing, not parallel inference)"
+            },
+            "completeness": {
+              "weight": 0.3,
+              "rubric": "All 5 elements: scenarios, metrics, criteria, duration, script"
+            },
+            "code_quality": {
+              "weight": 0.15,
+              "rubric": "Test script syntactically correct and runnable"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Addresses: what happens under queue saturation, timeout handling, role-switch latency"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Clear pass/fail criteria with specific thresholds"
+            }
+          }
+        },
+        {
+          "id": "pb_3",
+          "name": "Comparative Benchmark Report",
+          "difficulty": 4,
+          "prompt": "Write a performance comparison report for 3 LLM models on the same Jetson hardware:\n\n| Model | Size | Gen tok/s | Prompt tok/s | RAM | Swap | Temp |\n|-------|------|-----------|-------------|-----|------|------|\n| Qwen3.5-4B Q8_0 | 4.48 GB | 10.5 | 257 | 6.1 GiB | 66 MB | 62°C |\n| Qwen3-8B Q5_K_M | 5.5 GB | 8.2 | 180 | 6.8 GiB | 320 MB | 68°C |\n| Qwen3.5-9B Q4_K_M | 5.3 GB | 8.8 | 195 | 6.6 GiB | 210 MB | 65°C |\n\nInclude: executive summary, methodology notes, per-model analysis, head-to-head comparison, efficiency analysis (tok/s per GB model weight), thermal sustainability assessment, and recommendation with reasoning.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Efficiency calculations correct, thermal analysis reasonable, comparison fair"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 7 sections present with substantive content"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Professional formatting, consistent units, clear tables"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Notes swap usage as warning for 8B, thermal headroom analysis"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Actionable recommendation with confidence level"
+            }
+          }
+        }
+      ],
+      "recommendation_reason": "BFCL: 51.4, Speed: 17.2 tok/s, Params: 3.0B, Score: 68.6"
+    },
+    {
+      "id": "api_tester",
+      "name": "API Tester",
+      "icon": "🔌",
+      "source_file": "testing/testing-api-tester.md",
+      "description": "API testing and validation specialist. Endpoint coverage, security testing, performance validation, test automation.",
+      "key_metric": "bfcl_v4",
+      "secondary_metrics": [
+        "provider_livecodebench_v6",
+        "provider_ifeval"
+      ],
+      "recommended_model": "Nanbeige4-3B-Thinking",
+      "recommended_quant": "Q8_0",
+      "tasks": [
+        {
+          "id": "at_1",
+          "name": "API Test Suite Generation",
+          "difficulty": 4,
+          "prompt": "Generate a complete test suite for an OpenAI-compatible LLM inference API at http://localhost:8000/v1. Endpoints: POST /v1/chat/completions, GET /v1/models, GET /v1/health. The test suite must cover: happy path (valid chat completion request), input validation (missing 'messages' field, invalid model name, empty messages array, max_tokens=0), error handling (model not loaded returns 503), performance (response time < 30s for 100 token generation), and security (no unexpected headers exposed, proper content-type). Write in Python using pytest with clear test names.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Tests target the right endpoints, assertions correct, pytest patterns proper"
+            },
+            "completeness": {
+              "weight": 0.3,
+              "rubric": "All categories covered: happy path, validation (4 cases), errors, performance, security = 10+ tests"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Clean pytest style, fixtures for base URL/headers, descriptive test names, no hardcoded URLs in tests"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Tests independent (no order dependency), proper cleanup, timeout handling"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Test categories grouped with docstrings explaining what each validates"
+            }
+          }
+        },
+        {
+          "id": "at_2",
+          "name": "Contract Testing Design",
+          "difficulty": 3,
+          "prompt": "Design a contract test that validates an LLM hot-swap API maintains backward compatibility. The API has these guaranteed behaviors:\n1. POST /api/switch always returns {model, status, swap_time_ms}\n2. GET /api/status always returns {model, uptime_s}\n3. Response times for /api/status < 100ms\n4. Model names follow pattern: [A-Za-z0-9.-]+\n5. Status field only contains: 'ready', 'loading', 'error'\n\nWrite the contract tests and a CI pipeline that runs them on every PR.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Contract assertions match all 5 specifications, regex patterns correct"
+            },
+            "completeness": {
+              "weight": 0.25,
+              "rubric": "All 5 contracts tested, CI pipeline defined, failure handling clear"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Tests use schema validation (jsonschema or pydantic), CI YAML valid"
+            },
+            "robustness": {
+              "weight": 0.15,
+              "rubric": "Handles: API down during tests, slow responses, unexpected extra fields (open schema)"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Contract document separate from tests, listing each guarantee"
+            }
+          }
+        },
+        {
+          "id": "at_3",
+          "name": "Failure Scenario Matrix",
+          "difficulty": 4,
+          "prompt": "Create a comprehensive failure scenario test matrix for an LLM inference API on edge hardware. Categories: network failures (connection reset, timeout, DNS), resource exhaustion (OOM, disk full, GPU overtemp), application errors (invalid model, corrupt weights, context overflow), concurrent access (simultaneous requests, model swap during inference, rapid reconnection). For each scenario: describe the test setup, expected behavior, actual test implementation (curl or Python), and acceptance criteria.",
+          "grading": {
+            "correctness": {
+              "weight": 0.3,
+              "rubric": "Scenarios realistic for edge deployment, expected behaviors reasonable (graceful degradation)"
+            },
+            "completeness": {
+              "weight": 0.3,
+              "rubric": "All 4 categories with 3+ scenarios each = 12+ total test cases"
+            },
+            "code_quality": {
+              "weight": 0.2,
+              "rubric": "Test implementations are runnable, setup/teardown described, assertions clear"
+            },
+            "robustness": {
+              "weight": 0.1,
+              "rubric": "Acceptance criteria specific (e.g., 'returns 503 within 5s' not 'returns error')"
+            },
+            "documentation": {
+              "weight": 0.1,
+              "rubric": "Matrix format with clear risk/priority per scenario"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "hot_swap_config": {
+    "description": "Hot-swap API enables automatic model switching based on agent role. Connects to agency-agents roles via a lightweight HTTP API on the Jetson.",
+    "default_model": "Qwen3.5-4B",
+    "default_quant": "Q8_0",
+    "swap_cost_seconds": 5,
+    "strategy": "batch_by_model",
+    "strategy_description": "Batch requests using the same model together. Most agency-agents roles work well with the 4B default. Only code_reviewer needs the 9B model for deeper analysis.",
+    "model_coverage": {
+      "Qwen3.5-4B": [
+        "frontend_developer",
+        "backend_architect",
+        "security_engineer",
+        "technical_writer",
+        "ai_engineer",
+        "performance_benchmarker",
+        "api_tester"
+      ],
+      "Qwen3.5-9B": [
+        "code_reviewer"
+      ]
+    },
+    "api_port": 8001,
+    "signal_endpoint": "POST /api/switch",
+    "health_endpoint": "GET /api/health"
+  }
+}
