@@ -152,7 +152,7 @@
     "license": "apache-2.0",
     "provider": "Nanbeige",
     "gguf_source": "bartowski/Nanbeige_Nanbeige4-3B-Thinking-2511-GGUF",
-    "notes": "TESTED. 17.22 tok/s — FASTEST model on Jetson! Near-100% bandwidth efficiency (LLaMA arch). Highest BFCL v4 at 3B. Deep thinker: needs 4096+ tokens for visible output. All tokens go to reasoning_content field.",
+    "notes": "TESTED. 17.22 tok/s \u2014 FASTEST model on Jetson! Near-100% bandwidth efficiency (LLaMA arch). Highest BFCL v4 at 3B. Deep thinker: needs 4096+ tokens for visible output. All tokens go to reasoning_content field.",
     "test_date": "2026-03-23",
     "recommended_roles": [
       "tool_caller"
@@ -207,7 +207,7 @@
     "status": "tested",
     "tier": 1,
     "runtime": "llama.cpp b8095",
-    "gen_tps": 20.79,
+    "gen_tps": 20.27,
     "gen_tps_predicted": 13.4,
     "prompt_tps": null,
     "bfcl_v4": 41.22,
@@ -229,7 +229,7 @@
     "provider": "Salesforce",
     "gguf_source": null,
     "notes": "Incredible function calling at only 3B. 87.5% parallel FC. Fast on Jetson.",
-    "test_date": "2026-03-24",
+    "test_date": "2026-03-24T20:47:03Z",
     "recommended_roles": [
       "tool_caller"
     ],
@@ -237,14 +237,14 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": 4096,
-      "n_gpu_layers": 99,
-      "flash_attn": true,
-      "mlock": true,
-      "no_mmap": true,
-      "threads": 4,
-      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
-      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-3B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+      "ctx_size": "2048",
+      "n_gpu_layers": "999",
+      "threads": "6",
+      "batch_size": "1024",
+      "cache_type_k": "q8_0",
+      "cache_type_v": "q8_0",
+      "flash_attn": "on",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-3B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
       "honors_no_think": true,
@@ -486,7 +486,7 @@
     "license": "cc-by-nc-4.0",
     "provider": "MadeAgents",
     "gguf_source": null,
-    "notes": "Strong simple FC. Zero multi-turn — single-call specialist only.",
+    "notes": "Strong simple FC. Zero multi-turn \u2014 single-call specialist only.",
     "test_date": null,
     "recommended_roles": [
       "tool_caller"
@@ -600,7 +600,7 @@
     "status": "tested",
     "tier": 1,
     "runtime": "llama.cpp b8095",
-    "gen_tps": 18.34,
+    "gen_tps": 18.11,
     "gen_tps_predicted": 26.1,
     "prompt_tps": null,
     "bfcl_v4": 32.14,
@@ -622,7 +622,7 @@
     "provider": "katanemo",
     "gguf_source": null,
     "notes": "Ultra-fast agent model. 32.14 BFCL at 1.5B is remarkable. Hot-swap candidate for quick tool calls.",
-    "test_date": "2026-03-24",
+    "test_date": "2026-03-24T20:40:31Z",
     "recommended_roles": [
       "tool_caller"
     ],
@@ -630,14 +630,14 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": 4096,
-      "n_gpu_layers": 99,
-      "flash_attn": true,
-      "mlock": true,
-      "no_mmap": true,
-      "threads": 4,
-      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
-      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Arch-Agent-1.5B.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+      "ctx_size": "2048",
+      "n_gpu_layers": "999",
+      "threads": "6",
+      "batch_size": "1024",
+      "cache_type_k": "q8_0",
+      "cache_type_v": "q8_0",
+      "flash_attn": "on",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Arch-Agent-1.5B.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
       "honors_no_think": true,
@@ -767,10 +767,10 @@
     "params_b": 4.0,
     "best_quant": "Q8_0",
     "gguf_size_gb": 4.5,
-    "status": "candidate",
+    "status": "tested",
     "tier": 1,
     "runtime": null,
-    "gen_tps": null,
+    "gen_tps": 11.03,
     "gen_tps_predicted": 10.4,
     "prompt_tps": null,
     "bfcl_v4": 25.55,
@@ -792,13 +792,23 @@
     "provider": "openbmb",
     "gguf_source": null,
     "notes": "Compact 4B with native FC support. Apache-2.0 license.",
-    "test_date": null,
+    "test_date": "2026-03-24T21:05:58Z",
     "recommended_roles": [
       "tool_caller"
     ],
     "source_refs": [
       "bfcl_v4"
-    ]
+    ],
+    "jetson_settings": {
+      "ctx_size": "2048",
+      "n_gpu_layers": "999",
+      "threads": "6",
+      "batch_size": "1024",
+      "cache_type_k": "q8_0",
+      "cache_type_v": "q8_0",
+      "flash_attn": "on",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/minicpm3-4b-q4_k_m.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
+    }
   },
   {
     "model": "Llama-3.1-8B-Instruct",
@@ -905,7 +915,7 @@
     "status": "tested",
     "tier": 1,
     "runtime": "llama.cpp b8095",
-    "gen_tps": 32.11,
+    "gen_tps": 31.23,
     "gen_tps_predicted": 39.1,
     "prompt_tps": null,
     "bfcl_v4": 30.44,
@@ -927,7 +937,7 @@
     "provider": "Salesforce",
     "gguf_source": null,
     "notes": "Ultra-lightweight FC specialist. 30.44 BFCL at 1B is exceptional. ~39 tok/s predicted. Perfect for rapid tool routing.",
-    "test_date": "2026-03-24",
+    "test_date": "2026-03-24T20:38:34Z",
     "recommended_roles": [
       "tool_caller"
     ],
@@ -935,14 +945,14 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": 4096,
-      "n_gpu_layers": 99,
-      "flash_attn": true,
-      "mlock": true,
-      "no_mmap": true,
-      "threads": 4,
-      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
-      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-1B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+      "ctx_size": "2048",
+      "n_gpu_layers": "999",
+      "threads": "4",
+      "batch_size": "512",
+      "cache_type_k": "q8_0",
+      "cache_type_v": "q8_0",
+      "flash_attn": "on",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-1B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 4 --batch-size 512 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
       "honors_no_think": true,
@@ -1077,7 +1087,7 @@
     "status": "tested",
     "tier": 1,
     "runtime": "llama.cpp b8095",
-    "gen_tps": 32.58,
+    "gen_tps": 32.3,
     "gen_tps_predicted": 23.5,
     "prompt_tps": null,
     "bfcl_v4": 28.41,
@@ -1099,8 +1109,8 @@
     "license": "apache-2.0",
     "provider": "Qwen",
     "gguf_source": null,
-    "notes": "Excellent for 1.7B — 28.41 BFCL. ~23.5 tok/s predicted. Hot-swap speed candidate.",
-    "test_date": "2026-03-24",
+    "notes": "Excellent for 1.7B \u2014 28.41 BFCL. ~23.5 tok/s predicted. Hot-swap speed candidate.",
+    "test_date": "2026-03-24T20:35:24Z",
     "recommended_roles": [
       "tool_caller"
     ],
@@ -1108,14 +1118,14 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": 4096,
-      "n_gpu_layers": 99,
-      "flash_attn": true,
-      "mlock": true,
-      "no_mmap": true,
-      "threads": 4,
-      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
-      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Qwen3-1.7B-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+      "ctx_size": "2048",
+      "n_gpu_layers": "999",
+      "threads": "6",
+      "batch_size": "512",
+      "cache_type_k": "q8_0",
+      "cache_type_v": "q8_0",
+      "flash_attn": "on",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Qwen3-1.7B-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 512 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
       "honors_no_think": true,
@@ -1174,7 +1184,7 @@
     "status": "tested",
     "tier": 1,
     "runtime": "llama.cpp b8095",
-    "gen_tps": 91.17,
+    "gen_tps": 88.92,
     "gen_tps_predicted": 117.3,
     "prompt_tps": null,
     "bfcl_v4": 18.98,
@@ -1196,7 +1206,7 @@
     "provider": "IBM",
     "gguf_source": null,
     "notes": "Tiniest FC model. 18.98 BFCL at 350M params. ~117 tok/s predicted. Instant routing layer candidate.",
-    "test_date": "2026-03-24",
+    "test_date": "2026-03-24T20:43:32Z",
     "recommended_roles": [
       "tool_caller"
     ],
@@ -1204,14 +1214,14 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": 4096,
-      "n_gpu_layers": 99,
-      "flash_attn": true,
-      "mlock": true,
-      "no_mmap": true,
-      "threads": 4,
-      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
-      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all -v /home/jetson/models/llama-cache:/models -p 8000:8000 ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/granite-4.0-350m-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 99 --flash-attn on --mlock --no-mmap --threads 4"
+      "ctx_size": "4096",
+      "n_gpu_layers": "999",
+      "threads": "6",
+      "batch_size": "1024",
+      "cache_type_k": "q8_0",
+      "cache_type_v": "q8_0",
+      "flash_attn": "on",
+      "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/granite-4.0-350m-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
       "honors_no_think": true,
