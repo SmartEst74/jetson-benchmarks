@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Run role-based benchmarks against the Jetson LLM API."""
+"""Run role-based benchmarks with proper thinking/content capture.
+Tests each role with BOTH thinking and no_think modes.
+Captures thinking_chars AND response_chars for each.
+"""
 import json, time, urllib.request, os, sys
 
 API = "http://localhost:8000/v1/chat/completions"
@@ -25,23 +28,23 @@ ROLES = {
     "api_tester": "Generate a pytest test suite for an OpenAI-compatible LLM API at localhost:8000/v1. Endpoints: POST /v1/chat/completions, GET /v1/models. Cover: happy path, input validation (missing messages, invalid model, empty array), error handling, performance (response under 30s), security (proper headers). Use pytest with clear names.",
 }
 
-print(f"=== Jetson Role Benchmark ===")
-print(f"Model: {MODEL}")
-print(f"Date: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}")
-print(f"Roles: {len(ROLES)}")
-print()
-
-results = []
-for role, prompt in ROLES.items():
-    print(f"--- {role} ---", flush=True)
+def run_test(role, prompt, mode="think", max_tokens=4096):
+    """Run a single role test and capture thinking + response content."""
+    # Build messages based on mode
+    system_msg = "You are a helpful assistant acting as a specialized agent."
+    user_msg = prompt
+    
+    if mode == "no_think":
+        user_msg = "/no_think\n\n" + prompt
+    
     payload = json.dumps({
         "model": MODEL,
         "messages": [
-            {"role": "system", "content": "You are a helpful assistant acting as a specialized agent."},
-            {"role": "user", "content": prompt}
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": user_msg}
         ],
         "temperature": 0.6,
-        "max_tokens": 1024,
+        "max_tokens": max_tokens,
         "stream": False
     }).encode()
     
@@ -52,8 +55,7 @@ for role, prompt in ROLES.items():
         with urllib.request.urlopen(req, timeout=300) as resp:
             raw = json.loads(resp.read())
     except Exception as e:
-        print(f"  ERROR: {e}")
-        continue
+        return {"error": str(e)}
     wall_ms = int((time.time() - t0) * 1000)
     
     timings = raw.get("timings", {})
@@ -61,45 +63,118 @@ for role, prompt in ROLES.items():
     choice = raw.get("choices", [{}])[0]
     msg = choice.get("message", {})
     
-    r = {
+    thinking_content = msg.get("reasoning_content", "") or ""
+    response_content = msg.get("content", "") or ""
+    
+    return {
         "role": role,
         "model": MODEL,
+        "mode": mode,
+        "max_tokens": max_tokens,
         "gen_tok_s": round(timings.get("predicted_per_second", 0), 2),
         "prompt_tok_s": round(timings.get("prompt_per_second", 0), 2),
         "gen_tokens": timings.get("predicted_n", usage.get("completion_tokens", 0)),
         "prompt_tokens": timings.get("prompt_n", usage.get("prompt_tokens", 0)),
         "wall_time_ms": wall_ms,
         "finish_reason": choice.get("finish_reason", "unknown"),
-        "thinking_used": bool(msg.get("reasoning_content")),
-        "response_chars": len(msg.get("content", "")),
+        "thinking_used": bool(thinking_content),
+        "thinking_chars": len(thinking_content),
+        "response_chars": len(response_content),
+        "thinking_content": thinking_content[:500],  # First 500 chars for preview
+        "response_preview": response_content[:500],
     }
-    results.append(r)
-    print(json.dumps(r, indent=2))
-    
-    with open(f"{OUT}/{role}.json", "w") as f:
-        json.dump(r, f, indent=2)
-    with open(f"{OUT}/{role}_response.txt", "w") as f:
-        if msg.get("reasoning_content"):
-            f.write("=== THINKING ===\n")
-            f.write(str(msg["reasoning_content"]) + "\n\n")
-        f.write("=== RESPONSE ===\n")
-        f.write(str(msg.get("content", "")))
-    print()
 
-print("\n=== SUMMARY ===")
-if results:
-    hdr = f"{'Role':<25} {'Gen tok/s':>10} {'Prompt tok/s':>12} {'Tokens':>8} {'Wall ms':>10} {'Thinking':>10}"
-    print(hdr)
-    print("-" * len(hdr))
-    for r in results:
-        print(f"{r['role']:<25} {r['gen_tok_s']:>10.2f} {r['prompt_tok_s']:>12.2f} {r['gen_tokens']:>8} {r['wall_time_ms']:>10} {str(r['thinking_used']):>10}")
-    avg_gen = sum(r["gen_tok_s"] for r in results) / len(results)
-    avg_prompt = sum(r["prompt_tok_s"] for r in results) / len(results)
-    total_tokens = sum(r["gen_tokens"] for r in results)
-    print("-" * len(hdr))
-    print(f"{'AVERAGE':<25} {avg_gen:>10.2f} {avg_prompt:>12.2f} {total_tokens:>8}")
+print(f"=== Jetson Role Benchmark (Enhanced) ===")
+print(f"Model: {MODEL}")
+print(f"Date: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}")
+print(f"Roles: {len(ROLES)}")
+print(f"Modes: think (4096 tokens), no_think (4096 tokens)")
+print()
+
+all_results = []
+
+for role, prompt in ROLES.items():
+    print(f"\n{'='*60}")
+    print(f"Role: {role}")
+    print(f"{'='*60}")
+    
+    role_results = {"role": role, "tests": []}
+    
+    # Test with thinking mode
+    print(f"  Running THINK mode (4096 tokens)...", flush=True)
+    think_result = run_test(role, prompt, mode="think", max_tokens=4096)
+    if "error" not in think_result:
+        role_results["think"] = think_result
+        print(f"    Result: {think_result['gen_tok_s']} tok/s, thinking={think_result['thinking_chars']} chars, response={think_result['response_chars']} chars")
+    else:
+        print(f"    ERROR: {think_result['error'][:100]}")
+    
+    # Test with no_think mode
+    print(f"  Running NO_THINK mode (4096 tokens)...", flush=True)
+    nothink_result = run_test(role, prompt, mode="no_think", max_tokens=4096)
+    if "error" not in nothink_result:
+        role_results["no_think"] = nothink_result
+        print(f"    Result: {nothink_result['gen_tok_s']} tok/s, thinking={nothink_result['thinking_chars']} chars, response={nothink_result['response_chars']} chars")
+    else:
+        print(f"    ERROR: {nothink_result['error'][:100]}")
+    
+    all_results.append(role_results)
+    
+    # Save individual role results
+    with open(f"{OUT}/{role}_think.json", "w") as f:
+        json.dump(think_result, f, indent=2)
+    with open(f"{OUT}/{role}_nothink.json", "w") as f:
+        json.dump(nothink_result, f, indent=2)
+    with open(f"{OUT}/{role}_think_response.txt", "w") as f:
+        if "error" not in think_result:
+            if think_result["thinking_content"]:
+                f.write("=== THINKING ===\n")
+                f.write(think_result["thinking_content"] + "\n\n")
+            f.write("=== RESPONSE ===\n")
+            f.write(think_result["response_preview"])
+    with open(f"{OUT}/{role}_nothink_response.txt", "w") as f:
+        if "error" not in nothink_result:
+            if nothink_result["thinking_content"]:
+                f.write("=== THINKING ===\n")
+                f.write(nothink_result["thinking_content"] + "\n\n")
+            f.write("=== RESPONSE ===\n")
+            f.write(nothink_result["response_preview"])
+
+# Summary
+print(f"\n{'='*60}")
+print("SUMMARY")
+print(f"{'='*60}")
+
+print(f"\n{'Role':<25} {'Mode':<10} {'Gen tok/s':>10} {'Thinking':>10} {'Response':>10} {'Wall s':>8}")
+print("-" * 75)
+
+for result in all_results:
+    role = result["role"]
+    
+    # Think mode
+    if "think" in result:
+        t = result["think"]
+        wall_s = round(t["wall_time_ms"] / 1000, 1)
+        thinking = t["thinking_chars"]
+        response = t["response_chars"]
+        status = "✅" if (thinking > 0 or response > 0) else "⚠️"
+        print(f"{role:<25} {'think':<10} {t['gen_tok_s']:>10.2f} {thinking:>10} {response:>10} {wall_s:>8} {status}")
+    
+    # No_think mode
+    if "no_think" in result:
+        t = result["no_think"]
+        wall_s = round(t["wall_time_ms"] / 1000, 1)
+        thinking = t["thinking_chars"]
+        response = t["response_chars"]
+        status = "✅" if (thinking > 0 or response > 0) else "⚠️"
+        print(f"{'':<25} {'no_think':<10} {t['gen_tok_s']:>10.2f} {thinking:>10} {response:>10} {wall_s:>8} {status}")
 
 # Save all results
-with open(f"{OUT}/all_results.json", "w") as f:
-    json.dump({"model": MODEL, "date": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), "results": results}, f, indent=2)
+with open(f"{OUT}/all_role_results.json", "w") as f:
+    json.dump({
+        "model": MODEL,
+        "date": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        "results": all_results
+    }, f, indent=2)
+
 print(f"\nResults saved to {OUT}/")

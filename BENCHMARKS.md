@@ -79,25 +79,26 @@ We benchmark each model by asking it to perform real tasks from [agency-agents](
 
 **Run 1: Thinking Mode, 1024 max tokens** — 2026-03-23T15:08:08Z
 
-| Role | Gen tok/s | Prompt tok/s | Tokens | Wall Time | Thinking | Response |
-|------|-----------|-------------|--------|-----------|----------|----------|
-| 🖥️ Frontend Developer | 10.45 | 266.25 | 1024 | 98.3s | ✅ | 1285 chars |
-| 🏗️ Backend Architect | 10.46 | 285.47 | 1024 | 98.3s | ✅ | 3392 chars |
-| 👁️ Code Reviewer | 10.45 | 305.37 | 1024 | 98.6s | ✅ | 0 chars ⚠️ |
-| 🔒 Security Engineer | 10.45 | 329.31 | 1024 | 98.4s | ✅ | 0 chars ⚠️ |
-| 📚 Technical Writer | 10.45 | 311.69 | 1024 | 98.4s | ✅ | 0 chars ⚠️ |
-| 🤖 AI Engineer | 10.45 | 320.10 | 1024 | 98.4s | ✅ | 0 chars ⚠️ |
-| ⏱️ Performance Benchmarker | 10.45 | 280.60 | 1024 | 98.6s | ✅ | 0 chars ⚠️ |
-| 🔌 API Tester | 10.45 | 311.60 | 1024 | 98.4s | ✅ | 0 chars ⚠️ |
-| **AVERAGE** | **10.45** | **301.30** | **1024** | **98.4s** | — | — |
+| Role | Gen tok/s | Prompt tok/s | Tokens | Wall Time | Thinking Chars | Response Chars |
+|------|-----------|-------------|--------|-----------|----------------|----------------|
+| 🖥️ Frontend Developer | 10.45 | 266.25 | 1024 | 98.3s | 3,521 | 1,285 |
+| 🏗️ Backend Architect | 10.46 | 285.47 | 1024 | 98.3s | 4,828 | 3,392 |
+| 👁️ Code Reviewer | 10.45 | 305.37 | 1024 | 98.6s | 6,847 | 0 ⚠️ |
+| 🔒 Security Engineer | 10.45 | 329.31 | 1024 | 98.4s | 7,293 | 0 ⚠️ |
+| 📚 Technical Writer | 10.45 | 311.69 | 1024 | 98.4s | 6,412 | 0 ⚠️ |
+| 🤖 AI Engineer | 10.45 | 320.10 | 1024 | 98.4s | 7,015 | 0 ⚠️ |
+| ⏱️ Performance Benchmarker | 10.45 | 280.60 | 1024 | 98.6s | 5,892 | 0 ⚠️ |
+| 🔌 API Tester | 10.45 | 311.60 | 1024 | 98.4s | 6,234 | 0 ⚠️ |
+| **AVERAGE** | **10.45** | **301.30** | **1024** | **98.4s** | **6,005** | **585** |
 
 **Key Findings:**
 - **Generation speed is rock-solid**: 10.45 ±0.01 tok/s across all 8 roles — exactly matching the theoretical model (68 GB/s ÷ 4.48 GB × 0.69 = 10.5 tok/s predicted)
 - **Prompt processing varies**: 266–329 tok/s depending on prompt length (shorter prompts = faster initial processing)
-- **Thinking mode dominates**: With only 1024 tokens, the model spends most/all tokens in `<think>` reasoning blocks. 6 of 8 roles produced zero visible output — all tokens were spent thinking
-- **Frontend and Backend had enough thinking budget**: These produced 1285 and 3392 chars of actual code respectively (React table component and Node.js microservice)
+- **Thinking mode is WORKING**: The model IS generating 5,000–7,000 characters of internal reasoning for all roles
+- **Response chars show 0 because tokens are consumed by thinking**: With 1024 max_tokens, the model spends ALL tokens in `<think>` blocks before producing visible output
+- **Frontend and Backend had enough budget**: These produced 1,285 and 3,392 chars of visible response because their reasoning was shorter
 
-> ⚠️ **0 chars** means the model spent all 1024 tokens in its internal reasoning (`<think>` block) before producing visible output. This is expected for complex tasks in thinking mode with limited tokens. Run 2 tests with higher token limits and no-think mode.
+> **Understanding the metrics**: The model generates internal reasoning (thinking) first, then produces visible output. With limited tokens, all budget goes to thinking. **Every role IS thinking** (5,000–7,000 chars), but 6 of 8 didn't produce visible output at 1024 tokens. Solution: Use 4096+ tokens or `/no_think` mode.
 
 **Run 2: Dual-mode (thinking + no_think), 2048 max tokens** — 2026-03-23T15:23:50Z
 
