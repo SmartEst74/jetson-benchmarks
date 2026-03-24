@@ -151,28 +151,67 @@ Each task uses weighted 5-dimension rubric:
 | Robustness | 10-15% | Handles edge cases? |
 | Documentation | 10% | Well-explained? |
 
-## BFCL v4 Integration
+## BFCL v4 — What It Is and Where It Comes From
+
+### What Is BFCL v4?
+
+**BFCL v4** = **Berkeley Function Calling Leaderboard Version 4**
+
+It's a benchmark from UC Berkeley that tests an LLM's ability to **call functions and tools accurately**. When you ask an AI to "book a flight" or "query a database," it needs to convert your request into a valid function call. BFCL measures how well models do this.
+
+### Source & Verification
+
+| Resource | URL |
+|----------|-----|
+| **Official Leaderboard** | https://gorilla.cs.berkeley.edu/leaderboard.html |
+| **GitHub Code** | https://github.com/ShishirPatil/gorilla |
+| **Academic Paper** | https://proceedings.mlr.press/v267/patil25a.html |
+| **Reproduce Results** | `pip install bfcl-eval==2025.12.17` |
+| **Commit Reference** | f7cf735 (2025-12-16) |
+
+### What Does BFCL v4 Test?
+
+The benchmark evaluates 6 categories of function calling:
+
+| Category | What It Tests | Example |
+|----------|---------------|---------|
+| **Simple FC** | Single function call from natural language | "What's the weather?" → `get_weather(location="NYC")` |
+| **Multiple FC** | Multiple independent function calls | "Compare prices" → `get_price(item)` × 3 |
+| **Parallel FC** | Parallel function execution | "Check all stores" → `check_stock(store_id)` × 5 |
+| **Multi-Turn** | Multi-step conversations with tool use | "Book flight, then hotel" → 2 sequential calls |
+| **Web Search** | Agentic RAG/tool use | "Research X" → search + summarize |
+| **Irrelevance Detection** | Rejecting invalid/irrelevant requests | "Tell me a joke" → no function call (correct!) |
+
+### How Is It Scored?
+
+BFCL uses **Abstract Syntax Tree (AST) analysis** to check if the model's function call has:
+1. **Correct syntax** — Is it valid code?
+2. **Correct parameters** — Are the right values passed?
+3. **Correct execution path** — Would this actually work?
+
+Each category is scored 0–100. The overall BFCL score is the average across all categories.
 
 ### Score Interpretation
 
-| Score Range | Meaning | Example |
-|-------------|---------|---------|
+| Score Range | Meaning | Jetson Example |
+|-------------|---------|----------------|
 | 50+ | Excellent tool caller | Nanbeige4-3B (51.4) |
 | 40-49 | Strong tool caller | Qwen3.5-4B (49.7) |
 | 30-39 | Adequate | Qwen3-1.7B (28.4) |
 | 20-29 | Basic | Granite-4.0-350m (19.0) |
 | <20 | Poor | — |
 
-### Sub-category Scores
+### Citation
 
-| Category | What It Tests |
-|----------|---------------|
-| **Simple FC** | Single function call |
-| **Multiple FC** | Multiple independent calls |
-| **Parallel FC** | Parallel function execution |
-| **Multi-Turn** | Multi-step conversations |
-| **Web Search** | RAG/tool use |
-| **Irrelevance** | Rejecting invalid requests |
+```bibtex
+@InProceedings{pmlr-v267-patil25a,
+  title = {The Berkeley Function Calling Leaderboard (BFCL): From Tool Use to Agentic Evaluation of Large Language Models},
+  author = {Patil, Shishir G and Mao, Huanzhi and Yan, Fanjia and Ji, Charlie Cheng-Jie and Suresh, Vishnu and Stoica, Ion and Gonzalez, Joseph E},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
+  year = {2025},
+  url = {https://proceedings.mlr.press/v267/patil25a.html}
+}
+```
 
 ## Reproducibility
 
