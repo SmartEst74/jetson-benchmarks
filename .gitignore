@@ -21,3 +21,9 @@ node_modules/
 *.gguf
 *.bin
 *.safetensors
+
+# Local benchmark artifacts
+*.backup
+*.log
+*.pid
+bench_results/

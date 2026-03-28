@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Maximum Utilization Jetson LLM Benchmark
-Tests multiple configurations to find the optimal settings for each model.
+JETSON_HOST = os.environ.get("JETSON_HOST", "jetson@192.168.1.23")
+MODELS_CACHE = os.environ.get("JETSON_MODELS_CACHE", "/home/jetson/models/llama-cache")
 Targets ~95-100% GPU utilization while maintaining stability.
 Captures ALL settings for reproducibility.
 """

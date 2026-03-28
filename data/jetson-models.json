@@ -237,13 +237,16 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": "2048",
-      "n_gpu_layers": "999",
-      "threads": "6",
-      "batch_size": "1024",
+      "ctx_size": 2048,
+      "n_gpu_layers": 999,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 6,
+      "batch_size": 1024,
       "cache_type_k": "q8_0",
       "cache_type_v": "q8_0",
-      "flash_attn": "on",
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
       "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-3B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
@@ -255,7 +258,12 @@
       "gen_tps": 19.3,
       "thinking_chars": 0,
       "response_chars": 35
-    }
+    },
+    "gpu_util_best": 2.5,
+    "power_w": null,
+    "memory_used_mb": null,
+    "memory_total_mb": null,
+    "gpu_temp_c": 56.718
   },
   {
     "model": "BitAgent-Bounty-8B",
@@ -630,13 +638,16 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": "2048",
-      "n_gpu_layers": "999",
-      "threads": "6",
-      "batch_size": "1024",
+      "ctx_size": 2048,
+      "n_gpu_layers": 999,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 6,
+      "batch_size": 1024,
       "cache_type_k": "q8_0",
       "cache_type_v": "q8_0",
-      "flash_attn": "on",
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
       "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Arch-Agent-1.5B.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
@@ -648,7 +659,12 @@
       "gen_tps": 18.31,
       "thinking_chars": 0,
       "response_chars": 1897
-    }
+    },
+    "gpu_util_best": 3.5,
+    "power_w": null,
+    "memory_used_mb": null,
+    "memory_total_mb": null,
+    "gpu_temp_c": 61.25
   },
   {
     "model": "Phi-4",
@@ -800,15 +816,23 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": "2048",
-      "n_gpu_layers": "999",
-      "threads": "6",
-      "batch_size": "1024",
+      "ctx_size": 2048,
+      "n_gpu_layers": 999,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 6,
+      "batch_size": 1024,
       "cache_type_k": "q8_0",
       "cache_type_v": "q8_0",
-      "flash_attn": "on",
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
       "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/minicpm3-4b-q4_k_m.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
-    }
+    },
+    "gpu_util_best": 0.0,
+    "power_w": null,
+    "memory_used_mb": null,
+    "memory_total_mb": null,
+    "gpu_temp_c": 60.406
   },
   {
     "model": "Llama-3.1-8B-Instruct",
@@ -945,13 +969,16 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": "2048",
-      "n_gpu_layers": "999",
-      "threads": "4",
-      "batch_size": "512",
+      "ctx_size": 2048,
+      "n_gpu_layers": 999,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 4,
+      "batch_size": 512,
       "cache_type_k": "q8_0",
       "cache_type_v": "q8_0",
-      "flash_attn": "on",
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
       "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/xLAM-2-1B-fc-r-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 4 --batch-size 512 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
@@ -963,7 +990,12 @@
       "gen_tps": 32.02,
       "thinking_chars": 0,
       "response_chars": 1517
-    }
+    },
+    "gpu_util_best": 0.0,
+    "power_w": null,
+    "memory_used_mb": null,
+    "memory_total_mb": null,
+    "gpu_temp_c": 57.593
   },
   {
     "model": "Granite-3.2-8B-Instruct",
@@ -1118,13 +1150,16 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": "2048",
-      "n_gpu_layers": "999",
-      "threads": "6",
-      "batch_size": "512",
+      "ctx_size": 2048,
+      "n_gpu_layers": 999,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 6,
+      "batch_size": 512,
       "cache_type_k": "q8_0",
       "cache_type_v": "q8_0",
-      "flash_attn": "on",
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
       "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/Qwen3-1.7B-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 2048 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 512 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
@@ -1136,7 +1171,12 @@
       "gen_tps": 31.83,
       "thinking_chars": 2194,
       "response_chars": 0
-    }
+    },
+    "gpu_util_best": 0.0,
+    "power_w": null,
+    "memory_used_mb": null,
+    "memory_total_mb": null,
+    "gpu_temp_c": 60.906
   },
   {
     "model": "Falcon3-7B-Instruct",
@@ -1214,13 +1254,16 @@
       "bfcl_v4"
     ],
     "jetson_settings": {
-      "ctx_size": "4096",
-      "n_gpu_layers": "999",
-      "threads": "6",
-      "batch_size": "1024",
+      "ctx_size": 4096,
+      "n_gpu_layers": 999,
+      "flash_attn": true,
+      "mlock": true,
+      "no_mmap": true,
+      "threads": 6,
+      "batch_size": 1024,
       "cache_type_k": "q8_0",
       "cache_type_v": "q8_0",
-      "flash_attn": "on",
+      "docker_image": "ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin",
       "launch_cmd": "docker run -d --name bench-model --runtime nvidia --gpus all --network host -v /home/jetson/models/llama-cache:/models ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin /usr/local/bin/llama-server --model /models/granite-4.0-350m-Q8_0.gguf --host 0.0.0.0 --port 8000 --ctx-size 4096 --n-gpu-layers 999 --flash-attn on --mlock --no-mmap --threads 6 --batch-size 1024 --cache-type-k q8_0 --cache-type-v q8_0"
     },
     "thinking_metrics": {
@@ -1232,6 +1275,11 @@
       "gen_tps": 90.52,
       "thinking_chars": 0,
       "response_chars": 2097
-    }
+    },
+    "gpu_util_best": 0.0,
+    "power_w": null,
+    "memory_used_mb": null,
+    "memory_total_mb": null,
+    "gpu_temp_c": 57.437
   }
 ]
