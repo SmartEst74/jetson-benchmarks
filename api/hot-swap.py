@@ -27,8 +27,13 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
 ROLES_JSON = os.path.join(os.path.dirname(__file__), '..', 'data', 'agent-roles.json')
-LLM_SWITCH = os.path.expanduser('~/llm-switch.sh')
-LLM_API = 'http://192.168.1.23:8000/v1'
+DEFAULT_LLM_SWITCH_CANDIDATES = [
+    os.path.expanduser('~/llm-switch.sh'),
+    os.path.expanduser('~/scripts/llm-switch.sh'),
+    os.path.join(os.path.dirname(__file__), '..', 'scripts', 'llm-switch.sh'),
+]
+LLM_SWITCH = os.path.expanduser(os.getenv('LLM_SWITCH_PATH', DEFAULT_LLM_SWITCH_CANDIDATES[0]))
+LLM_API = os.getenv('LLM_API_URL', 'http://127.0.0.1:8000/v1')
 
 # Model name → llm-switch.sh argument
 # Maps model names to their llm-switch.sh aliases
@@ -70,15 +75,30 @@ def load_roles():
         return json.load(f)
 
 
+def resolve_llm_switch_path():
+    """Resolve a usable llm-switch.sh path from env var and common locations."""
+    if os.path.isfile(LLM_SWITCH):
+        return LLM_SWITCH
+
+    for candidate in DEFAULT_LLM_SWITCH_CANDIDATES:
+        if os.path.isfile(candidate):
+            return os.path.abspath(candidate)
+
+    return None
+
+
 def get_current_model():
     """Get currently running model by checking llm-switch.sh status or Docker container."""
+    llm_switch_path = resolve_llm_switch_path()
     try:
         # Try llm-switch.sh status first
-        result = subprocess.run(
-            [LLM_SWITCH, 'status'],
-            capture_output=True, text=True, timeout=10
-        )
-        output = result.stdout.strip().lower()
+        output = ''
+        if llm_switch_path:
+            result = subprocess.run(
+                [llm_switch_path, 'status'],
+                capture_output=True, text=True, timeout=10
+            )
+            output = result.stdout.strip().lower()
         
         # Map status output to model name
         for model_name, alias in MODEL_SWITCH_MAP.items():
@@ -87,10 +107,10 @@ def get_current_model():
         
         # Fallback: check Docker container logs for model name
         docker_result = subprocess.run(
-            ['docker', 'logs', 'llm-server', '2>&1'],
+            ['docker', 'logs', 'llm-server'],
             capture_output=True, text=True, timeout=10
         )
-        docker_output = docker_result.stdout.lower()
+        docker_output = (docker_result.stdout + docker_result.stderr).lower()
         for model_name, alias in MODEL_SWITCH_MAP.items():
             if model_name.lower().replace('-', '').replace('.', '') in docker_output.replace('-', '').replace('.', ''):
                 return model_name
@@ -106,15 +126,17 @@ def switch_model(model_name):
     if not switch_arg:
         return False, f'No switch mapping for {model_name}. Available models: {list(MODEL_SWITCH_MAP.keys())}'
     
+    llm_switch_path = resolve_llm_switch_path()
+
     try:
         # First try llm-switch.sh
-        if os.path.exists(LLM_SWITCH):
+        if llm_switch_path:
             result = subprocess.run(
-                [LLM_SWITCH, switch_arg],
+                [llm_switch_path, switch_arg],
                 capture_output=True, text=True, timeout=120
             )
             if result.returncode == 0:
-                return True, f'Switched to {model_name} via llm-switch.sh'
+                return True, f'Switched to {model_name} via {llm_switch_path}'
             else:
                 # llm-switch.sh failed, try Docker approach
                 print(f'llm-switch.sh failed: {result.stderr[:200]}')
@@ -145,6 +167,11 @@ def switch_model(model_name):
         
         if not os.path.exists(model_path):
             return False, f'Model file not found for {model_name}. Download first.'
+
+        if model_path.startswith('/home/jetson/models/'):
+            container_model_path = '/models/' + model_path[len('/home/jetson/models/'):]
+        else:
+            return False, f'Unsupported model path for container mount: {model_path}'
         
         # Determine appropriate context size based on model size
         model_size_gb = os.path.getsize(model_path) / (1024**3)
@@ -165,12 +192,14 @@ def switch_model(model_name):
             '-p', '8000:8000',
             'ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin',
             '/usr/local/bin/llama-server',
-            '--model', model_path,
+            '--model', container_model_path,
             '--host', '0.0.0.0',
             '--port', '8000',
             '--ctx-size', str(ctx_size),
             '--n-gpu-layers', '99',
             '--flash-attn', 'on',
+            '--mlock',
+            '--no-mmap',
             '--threads', '4'
         ]
         
@@ -210,10 +239,11 @@ class HotSwapHandler(BaseHTTPRequestHandler):
 
         if path == '/api/status':
             model = get_current_model()
+            switch_script = resolve_llm_switch_path() or LLM_SWITCH
             self._json(200, {
                 'model': model,
                 'api': LLM_API,
-                'switch_script': LLM_SWITCH,
+                'switch_script': switch_script,
                 'available_models': list(MODEL_SWITCH_MAP.keys()),
             })
 

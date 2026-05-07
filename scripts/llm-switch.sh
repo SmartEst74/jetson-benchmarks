@@ -3,8 +3,10 @@ set -euo pipefail
 
 MODE="${1:-status}"
 CONTAINER_NAME="llm-server"
-CACHE_DIR="/home/jetson/models/llama-cache"
-DOCKER_IMAGE="ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin"
+CACHE_DIR="${CACHE_DIR:-/home/jetson/models/llama-cache}"
+DOCKER_IMAGE="${DOCKER_IMAGE:-ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin}"
+SERVER_PORT="${SERVER_PORT:-8000}"
+STARTUP_TIMEOUT_SEC="${STARTUP_TIMEOUT_SEC:-120}"
 
 # Model mapping: alias -> filename pattern
 declare -A MODELS=(
@@ -36,6 +38,7 @@ declare -A MODELS=(
   ["qwen3-14b"]="Qwen3-14B-Q3_K_M.gguf"
   ["phi-4"]="phi-4-Q3_K_M.gguf"
   ["gemma-3-12b"]="gemma-3-12b-it-Q3_K_M.gguf"
+  ["ternary-bonsai-8b"]="Ternary-Bonsai-8B-Q2_0.gguf"
 )
 
 # Context size by tier
@@ -44,6 +47,10 @@ declare -A CTX_SIZES=(
   ["2"]=2048
   ["3"]=2048
   ["4"]=1024
+)
+
+declare -A MODEL_CTX_OVERRIDE=(
+  ["ternary-bonsai-8b"]=8192
 )
 
 stop_all() {
@@ -117,7 +124,7 @@ start_model() {
   fi
   
   local tier=$(get_model_tier "$alias")
-  local ctx_size=${CTX_SIZES[$tier]:-2048}
+  local ctx_size="${MODEL_CTX_OVERRIDE[$alias]:-${CTX_SIZES[$tier]:-2048}}"
   
   echo "Starting $alias (tier $tier, ctx=$ctx_size)..."
   echo "Model: $model_path"
@@ -134,7 +141,7 @@ start_model() {
     --runtime nvidia \
     --gpus all \
     -v "$CACHE_DIR:/models" \
-    -p 8000:8000 \
+    -p "$SERVER_PORT:8000" \
     "$DOCKER_IMAGE" \
     /usr/local/bin/llama-server \
     --model "/models/$filename" \
@@ -148,15 +155,23 @@ start_model() {
     --threads 4
   
   echo "Waiting for model to load..."
-  sleep 10
+  local deadline=$((SECONDS + STARTUP_TIMEOUT_SEC))
+  local ready=0
+  while (( SECONDS < deadline )); do
+    if curl -fsS "http://localhost:${SERVER_PORT}/health" >/dev/null 2>&1; then
+      ready=1
+      break
+    fi
+    sleep 2
+  done
   
   # Check if container is running
-  if sudo docker ps --filter "name=$CONTAINER_NAME" --format "{{.Names}}" | grep -q "$CONTAINER_NAME"; then
+  if [[ "$ready" -eq 1 ]] && sudo docker ps --filter "name=$CONTAINER_NAME" --format "{{.Names}}" | grep -q "$CONTAINER_NAME"; then
     echo "✓ Model $alias started successfully"
-    echo "API available at: http://$(hostname -I | awk '{print $1}'):8000"
+    echo "API available at: http://$(hostname -I | awk '{print $1}'):${SERVER_PORT}"
     echo ""
     echo "Test with:"
-    echo "  curl http://localhost:8000/v1/chat/completions \\"
+    echo "  curl http://localhost:${SERVER_PORT}/v1/chat/completions \\" 
     echo "    -H 'Content-Type: application/json' \\"
     echo "    -d '{\"model\":\"$alias\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}],\"max_tokens\":50}'"
   else
@@ -172,7 +187,7 @@ list_models() {
   for alias in $(echo "${!MODELS[@]}" | tr ' ' '\n' | sort); do
     local filename="${MODELS[$alias]}"
     local tier=$(get_model_tier "$alias")
-    local ctx_size=${CTX_SIZES[$tier]:-2048}
+    local ctx_size="${MODEL_CTX_OVERRIDE[$alias]:-${CTX_SIZES[$tier]:-2048}}"
     local status="available"
     
     if [[ -f "$CACHE_DIR/$filename" ]]; then
@@ -194,7 +209,7 @@ case "$MODE" in
   list)
     list_models
     ;;
-  qwen35-4b|qwen35-9b|nanbeige4-3b|qwen3-8b|xlam-2-1b|qwen3-1.7b|arch-agent-1.5b|granite-4.0-350m|hammer2.1-3b|xlam-2-3b|llama-3.2-3b|arch-agent-3b|gemma-3-4b|minicpm3-4b|qwen3-4b-2507|xlam-2-8b|hammer2.1-7b|bitagent-8b|toolace-2-8b|llama-3.1-8b|granite-3.2-8b|command-r7b|coalm-8b|falcon3-7b|qwen3-14b|phi-4|gemma-3-12b)
+  qwen35-4b|qwen35-9b|nanbeige4-3b|qwen3-8b|xlam-2-1b|qwen3-1.7b|arch-agent-1.5b|granite-4.0-350m|hammer2.1-3b|xlam-2-3b|llama-3.2-3b|arch-agent-3b|gemma-3-4b|minicpm3-4b|qwen3-4b-2507|xlam-2-8b|hammer2.1-7b|bitagent-8b|toolace-2-8b|llama-3.1-8b|granite-3.2-8b|command-r7b|coalm-8b|falcon3-7b|qwen3-14b|phi-4|gemma-3-12b|ternary-bonsai-8b)
     start_model "$MODE"
     ;;
   *)
@@ -210,6 +225,7 @@ case "$MODE" in
     echo "Popular models:" >&2
     echo "  qwen35-4b      - Production default (4.48 GB, 10.5 tok/s)" >&2
     echo "  nanbeige4-3b   - Champion (3.9 GB, 17.2 tok/s)" >&2
+    echo "  ternary-bonsai-8b - Ternary Bonsai Q2_0 (Prism build)" >&2
     echo "  qwen35-9b      - Backup (5.3 GB, 10.4 tok/s)" >&2
     echo "  qwen3-1.7b     - Fast 1.7B (1.71 GB, 32.6 tok/s)" >&2
     exit 1

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 MODEL_PATH="${MODEL_PATH:-/home/jetson/models/llama-cache/Qwen3.5-4B-Q8_0.gguf}"
+MODEL_BASENAME="$(basename "$MODEL_PATH")"
 PORT="${PORT:-8000}"
 CTX="${CTX:-8192}"
 THREADS="${THREADS:-6}"
@@ -24,7 +25,7 @@ exec sudo docker run --rm --name qwen35-4b \
   -v /home/jetson/models/slot-cache:/slot-cache \
   "$IMAGE" \
   llama-server \
-    --model "$MODEL_PATH" \
+    --model "/models/$MODEL_BASENAME" \
     --ctx-size "$CTX" \
     --n-gpu-layers 999 \
     --flash-attn on \

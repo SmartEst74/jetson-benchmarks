@@ -6,6 +6,25 @@
 [![Runtime](https://img.shields.io/badge/Runtime-llama.cpp_b8095-blue)](https://github.com/ggml-org/llama.cpp)
 [![Roles](https://img.shields.io/badge/Roles-agency--agents-purple)](https://github.com/msitarzewski/agency-agents)
 
+## How to Read These Results
+
+**For beginners**: 
+1. Start with [docs/QUICK-START.md](docs/QUICK-START.md) if you have a Jetson running and just want to test the model
+2. Look at the "Models Tested" table below. The **✅ Production** model (Ternary-Bonsai-8B) is what we recommend for most use cases
+3. If you want something faster, try **Nanbeige4-3B** (17 tok/s); if you want more reasoning, use the **Production** model at full 65K context
+
+**For researchers**: 
+- See the "Role-Based Benchmark Results" section for detailed BFCL sub-scores and thinking quality metrics
+- Visit [docs/QUICK-START.md](docs/QUICK-START.md#benchmarks--validation) to run your own measurements
+
+**For optimizers**: 
+- Check [docs/optimizations.md](docs/optimizations.md) for the exact flags and memory trade-offs
+- All measurements use the "Baseline" configuration from that doc
+
+**For reproducibility**: 
+- See [docs/methodology.md](docs/methodology.md) for the exact memory recovery procedure and thermal controls used between runs
+- All procedures are automated in the systemd service (see [docs/jetson-setup.md#step-7-make-it-production-ready](docs/jetson-setup.md#step-7-make-it-production-ready-optional-but-recommended))
+
 ## Hardware
 
 | Spec | Value |
@@ -17,17 +36,20 @@
 | **Memory BW** | 68 GB/s |
 | **Storage** | 128 GB NVMe SSD |
 | **Power** | 7-25W (MAXN_SUPER mode) |
-| **Runtime** | llama.cpp b8095 (Docker) |
+| **Runtime** | llama.cpp b8095 (Docker) / PrismML fork b1-d104cf1 (ternary models) |
 
 ## Models Tested
 
-| Model | GGUF Size | Quant | Gen tok/s | Architecture | Efficiency | Status |
-|-------|-----------|-------|-----------|-------------|------------|--------|
-| **Nanbeige4-3B-Thinking** | 3.9 GiB | Q8_0 | **17.22** | LLaMA | ~100% | ✅ Downloaded, Fastest |
-| **Qwen3.5-4B** | 4.2 GiB | Q8_0 | **10.45** | Hybrid DeltaNet | 69% | ✅ Production |
-| **Qwen3.5-9B** | 5.3 GiB | Q4_K_M | **10.44** | Hybrid DeltaNet | 87% | ✅ Backup |
-| **Qwen3-8B** | 5.5 GiB | Q5_K_M | **10.24** | Transformer | 89% | ⚠️ OOM after first request |
-| **Qwen3.5-35B-A3B** | 13 GiB | IQ3_XXS | 0.18 | MoE+DeltaNet | ~1% | ❌ Rejected (swap thrash) |
+| Model | GGUF Size | Quant | Gen tok/s | Prompt tok/s | Architecture | Efficiency | Runtime | Status |
+|-------|-----------|-------|-----------|-------------|-------------|------------|---------|--------|
+| **Nanbeige4-3B-Thinking** | 3.9 GiB | Q8_0 | **17.22** | — | LLaMA | ~100% | Docker (mainline) | ✅ Fastest |
+| **Ternary-Bonsai-8B** | 2.03 GiB | Q2_0 | **11.8** | **38.4** | LLaMA (ternary) | ~100%* | PrismML fork | ✅ Smallest 8B, GPU only |
+| **Qwen3.5-4B** | 4.2 GiB | Q8_0 | **10.45** | 301 | Hybrid DeltaNet | 69% | Docker (mainline) | ✅ Production |
+| **Qwen3.5-9B** | 5.3 GiB | Q4_K_M | **10.44** | — | Hybrid DeltaNet | 87% | Docker (mainline) | ✅ Backup |
+| **Qwen3-8B** | 5.5 GiB | Q5_K_M | **10.24** | — | Transformer | 89% | Docker (mainline) | ⚠️ OOM after first request |
+| **Qwen3.5-35B-A3B** | 13 GiB | IQ3_XXS | 0.18 | — | MoE+DeltaNet | ~1% | Docker (mainline) | ❌ Rejected (swap thrash) |
+
+*Ternary-Bonsai-8B uses 1.58-bit {−1, 0, +1} weights (Q2_0 GGUF). Requires [PrismML llama.cpp fork](https://github.com/PrismML-Eng/llama.cpp) — mainline llama.cpp lacks the ternary Q2_0 kernel. Built from source on-device with CUDA SM 8.7 and lld linker. See [docs/jetson-setup.md](docs/jetson-setup.md#ternary-models-prismml-fork).
 
 ### Architecture Matters: The Efficiency Story
 
@@ -40,20 +62,24 @@ predicted_tok/s = (bandwidth_GB/s ÷ GGUF_size_GiB) × efficiency_factor
 | Architecture | Efficiency | Why | Examples |
 |-------------|-----------|-----|----------|
 | **Pure LLaMA** | ~100% | Simple attention, GPU-optimized | Nanbeige4-3B |
+| **Ternary LLaMA (1.58-bit)** | ~100%* | {−1, 0, +1} weights, 2.03 GB for 8B params | Ternary-Bonsai-8B |
 | **Standard Transformer** | ~89% | Minor overhead from grouped attention | Qwen3-8B |
 | **Hybrid DeltaNet** | 69-87% | Gated recurrent state updates + attention mixing | Qwen3.5-4B, 9B |
 | **Sparse MoE** | ~1% | Expert routing forces CPU offload on 8GB | Qwen3.5-35B-A3B |
+
+*Ternary efficiency based on 2.03 GiB model size: 68 ÷ 2.03 × η → measured 11.8 tok/s vs ~33 tok/s theoretical, implying ~36% effective bandwidth efficiency. The ternary kernel is compute-efficient but bandwidth numbers reflect the dequantization overhead on SM 8.7.
 
 > **Key insight**: A 3B LLaMA model at Q8_0 (17.2 tok/s) is **65% faster** than a 4B DeltaNet model at Q8_0 (10.5 tok/s) despite being only 7% smaller. Architecture efficiency dominates on constrained hardware.
 
 ### Speed Comparison Chart
 
 ```
-Nanbeige4-3B Q8_0 (3.9 GiB) ████████████████████████████████████ 17.22 tok/s
-Qwen3.5-4B Q8_0  (4.2 GiB)  █████████████████████             10.45 tok/s  
-Qwen3.5-9B Q4_KM (5.3 GiB)  █████████████████████             10.44 tok/s
-Qwen3-8B Q5_KM   (5.5 GiB)  ████████████████████              10.24 tok/s
-Qwen3.5-35B MoE  (13 GiB)   ▏                                  0.18 tok/s
+Nanbeige4-3B Q8_0       (3.9 GiB) ████████████████████████████████████ 17.22 tok/s
+Ternary-Bonsai-8B Q2_0  (2.0 GiB) ████████████████████████           11.8  tok/s  † PrismML fork
+Qwen3.5-4B Q8_0         (4.2 GiB) █████████████████████              10.45 tok/s
+Qwen3.5-9B Q4_KM        (5.3 GiB) █████████████████████              10.44 tok/s
+Qwen3-8B Q5_KM          (5.5 GiB) ████████████████████               10.24 tok/s
+Qwen3.5-35B MoE         (13 GiB)  ▏                                   0.18 tok/s
 ```
 
 ## Role-Based Benchmark Results
@@ -127,6 +153,23 @@ We benchmark each model by asking it to perform real tasks from [agency-agents](
 
 <!-- BENCHMARK_RESULTS_END -->
 
+### Ternary-Bonsai-8B Q2_0 — GPU Benchmark Results
+
+> Measured 2025-05-05. Runtime: PrismML llama.cpp fork b1-d104cf1, built from source with CUDA SM 8.7 and lld linker.
+
+| Mode | Prompt tok/s | Gen tok/s | Tokens | Notes |
+|------|-------------|-----------|--------|-------|
+| CPU-only (`-ngl 0`, 6 threads) | 4.8 | 3.9 | 200 | No GPU offload |
+| **GPU (`-ngl 999`, flash-attn on)** | **38.4** | **11.8** | **200** | **All layers in VRAM** |
+
+**GPU gives 3× generation speedup and 8× prompt speedup over CPU-only.**
+
+- Model size: 2.03 GiB on disk, loaded entirely into VRAM (7607 MiB available)
+- Prompt: *"Explain what a ternary neural network is in 3 sentences."*
+- Flags: `-ngl 999 -fa on -t 6`
+- Build notes: GNU `ld` produces a broken `_init` in `libllama-common.so` on aarch64 (bad `BL` into `.rela.plt`). Fixed by switching to `lld` (`-DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld"`). See [docs/jetson-setup.md](docs/jetson-setup.md#ternary-models-prismml-fork).
+- Server: `llama-server --alias ternary-bonsai-8b --port 8001` — fully OpenAI-compatible API
+
 ### Other Models — Speed Benchmarks
 
 | Model | GGUF Size | Gen tok/s | Tokens | Wall Time | Notes |
@@ -157,9 +200,12 @@ The single biggest finding from these benchmarks:
 | Architecture | Model | GGUF | tok/s | Efficiency |
 |-------------|-------|------|-------|-----------|
 | Pure LLaMA | Nanbeige-3B | 3.9 GiB | **17.22** | ~100% |
+| Ternary LLaMA (1.58-bit) | Ternary-Bonsai-8B | 2.03 GiB | **11.8** | ~36%† |
 | Standard Transformer | Qwen3-8B | 5.5 GiB | 10.24 | 89% |
 | Hybrid DeltaNet | Qwen3.5-9B | 5.3 GiB | 10.44 | 87% |
 | Hybrid DeltaNet | Qwen3.5-4B | 4.2 GiB | 10.45 | 69% |
+
+†Ternary bandwidth efficiency is lower than naive math implies: at 2.03 GiB, bandwidth ceiling is ~33 tok/s, but measured is 11.8 — ternary dequantization adds compute overhead not present in float quantizations.
 
 > On memory-bandwidth-constrained devices like the Jetson 8 GB, **architecture efficiency matters more than parameter count**. A 3B LLaMA model runs 65% faster than a 4B DeltaNet model.
 
@@ -169,7 +215,8 @@ Models are classified by GGUF size and Jetson viability:
 
 | Tier | GGUF Size | Viability | Examples |
 |------|-----------|-----------|----------|
-| **T1** 🟢 | ≤ 4.5 GB | Runs comfortably with headroom | Qwen3.5-4B Q8_0 |
+| **T0** 🔵 | ≤ 2.5 GB | Maximum headroom, prompt-limited | Ternary-Bonsai-8B Q2_0 (PrismML fork) |
+| **T1** 🟢 | ≤ 4.5 GB | Runs comfortably with headroom | Qwen3.5-4B Q8_0, Nanbeige4-3B Q8_0 |
 | **T2** 🟡 | 4.5–6 GB | Runs with swap pressure | Qwen3.5-9B Q4_K_M, Qwen3-8B Q5_K_M |
 | **T3** 🟠 | 6–7 GB | Marginal, heavy swap, thermal issues | |
 | **T4** 🔴 | > 7 GB | Does not fit, rejected | Qwen3.5-35B-A3B |
@@ -233,4 +280,4 @@ Key benchmark scores for Jetson-viable models (from [Berkeley Function Calling L
 
 ---
 
-*Last updated: auto-generated from benchmark runs on Jetson Orin Nano Super*
+*Last updated: 2026-05-05 — added Ternary-Bonsai-8B GPU benchmark results (PrismML fork, CUDA SM 8.7)*

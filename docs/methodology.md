@@ -19,10 +19,50 @@ This document describes the scientific methodology used for benchmarking LLMs on
 
 ### Environment Control
 
-1. **Thermal Stability**: Wait for GPU temp < 55°C between model swaps
-2. **Memory Cleanup**: `sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches` before each run
-3. **Container Isolation**: Each model runs in fresh Docker container
-4. **No Background Load**: Production model stopped before benchmarks
+#### 1. Thermal Stability
+- Wait for GPU temp < 55°C between model swaps
+- Use `nvidia-smi` to monitor temperature
+- Jetson has thermal throttling at 75°C; stay well below that
+
+#### 2. Memory Cleanup (Critical)
+
+**The most important part of benchmarking on 8GB:** Model process memory doesn't automatically release. You must:
+
+1. **Stop the model process** — This actually frees the model's RAM allocation
+   ```bash
+   sudo systemctl stop jetson-bonsai-llm.service
+   sleep 1
+   ```
+
+2. **Sync and drop caches** — Clears Linux page cache, dentries, inodes
+   ```bash
+   sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches >/dev/null
+   ```
+
+3. **Hard cycle swap** — Clears stale swap entries and reclaims swap space
+   ```bash
+   sudo swapoff -a && sudo swapon -a
+   ```
+
+4. **Verify free memory before next test**
+   ```bash
+   free -h
+   ```
+
+**Why this order matters:**
+- If you `drop_caches` **without stopping the model**, you only clear page cache (~1.5 GB) — the model RAM (2+ GB) stays allocated
+- If you don't cycle swap, stale swap entries linger and new tests can trigger OOM
+- The systemd `ExecStartPre` hook on production Jetson runs this sequence automatically
+
+#### 3. Container Isolation
+- Each model runs in fresh Docker container
+- No mounted cache or shared state between runs
+- Ensures results aren't contaminated by previous test artifacts
+
+#### 4. No Background Load
+- Production model stopped before benchmarks
+- No SSH sessions running Python loops
+- Check `ps aux | grep llama` to confirm old processes are gone
 
 ### Docker Configuration
 
@@ -45,14 +85,16 @@ docker run -d --name bench-model \
 
 ### Parameters That Matter
 
-| Parameter | Value | Why |
-|-----------|-------|-----|
-| `--n-gpu-layers 99` | Offload all layers to GPU | Maximizes GPU utilization |
-| `--flash-attn on` | Flash attention | Reduces memory usage 30-50% |
-| `--mlock` | Lock model in RAM | Prevents swapping to NVMe |
-| `--no-mmap` | No memory mapping | Consistent performance |
-| `--threads 4` | CPU threads | Optimal for 6-core ARM |
-| `--ctx-size` | 2048-8192 | Trade-off: larger = more memory |
+| Parameter | Value (Ternary-Bonsai) | Why |
+|-----------|----------|-----|
+| `--n-gpu-layers 999` | Offload **all** layers to GPU | 1024 CUDA cores run 10× faster than CPU on Jetson |
+| `--flash-attn on` | Memory-efficient attention | Enables 65K context without OOM |
+| `--mlock` | Lock model in RAM | Prevents NVMe thrashing (10-100× slower if swapped) |
+| `--no-mmap` | Disable memory mapping | Predictable performance across runs |
+| `--cache-type-k q4_0` | Quantize K cache to 4-bit | 2.6 GB KV cache at 65K tokens (unquantized = OOM) |
+| `--cache-type-v q4_0` | Quantize V cache to 4-bit | Same as K; validated as fastest among 4 profiles |
+| `--ctx-size 65536` | Full context (benchmark range: 8K–65K) | Model's native limit; larger = more reasoning but slower |
+| `--parallel 1` | Single slot | 2+ slots = OOM (each needs full KV cache) |
 
 ## Measurement Methodology
 
@@ -109,7 +151,7 @@ With 8 GB unified RAM:
 |-----------|------------|
 | OS + Docker + CUDA context | ~2.5 GB |
 | Model weights | Variable |
-| KV cache | ~136 MB per 1K tokens |
+| KV cache | Depends on quantization; with `-ctk q4_0 -ctv q4_0`, 65,536 tokens uses ~2.5 GiB |
 | Compute scratch | ~0.5 GB |
 | **Available for model** | ~4.5 GB |
 

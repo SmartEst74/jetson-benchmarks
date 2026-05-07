@@ -2,7 +2,17 @@
 
 The definitive, measured benchmark platform for running LLMs on NVIDIA Jetson Orin Nano Super (8 GB). Every model listed here actually runs — or is predicted to run — on 8 GB of unified memory. No cloud models. No impossible configs. Real hardware. Real [agency-agents](https://github.com/msitarzewski/agency-agents) roles.
 
-**[Benchmark Results](BENCHMARKS.md)** · **[Agent Roles](ROLES.md)** · **[Test Roadmap](ROADMAP.md)**
+**[Quick Start](docs/QUICK-START.md)** · **[Getting Started](docs/GETTING-STARTED.md)** · **[Benchmark Results](BENCHMARKS.md)** · **[Agent Roles](ROLES.md)** · **[Setup Guide](docs/jetson-setup.md)** · **[Optimization Guide](docs/optimizations.md)** · **[Methodology](docs/methodology.md)**
+
+## Quick Start: 3 Steps to Peak Performance
+
+**New to this repo?** Start with [docs/GETTING-STARTED.md](docs/GETTING-STARTED.md) — it guides you based on your skill level.
+
+1. **Beginner**: Follow [docs/jetson-setup.md](docs/jetson-setup.md) to get your Jetson running from a fresh flash.
+2. **Deploy**: Use the production model (Ternary-Bonsai-8B) or [choose a different one](#current-champion-2026-03-24) based on your needs.
+3. **Verify**: Run `curl http://jetson-ip:8001/health` to confirm the API is live.
+
+**Already set up?** Jump to "[Getting the Most Out of Ternary-Bonsai](#getting-the-most-out-of-ternary-bonsai)" below.
 
 ## Why This Exists
 
@@ -35,6 +45,7 @@ Most Jetson guides copy desktop/server assumptions that fail on 8 GB unified mem
 | **Qwen3.5-4B** | Q8_0 | 4.48 GB | **10.45** | 49.7 | ✅ Production default (DeltaNet arch) |
 | **Qwen3.5-9B** | Q4_K_M | 5.3 GB | **10.44** | — | ✅ Backup (DeltaNet arch) |
 | **Qwen3-8B** | Q5_K_M | 5.5 GB | **10.24** | 42.57 | ⚠️ OOM risk |
+| **Ternary-Bonsai-8B** | Q2_0 | 2.03 GB | **11.8** | — | ✅ 1.58-bit ternary (PrismML fork required) |
 | **Qwen3.5-35B-A3B** | IQ3_XXS | 12.18 GB | 0.18 | — | ❌ Rejected (swap thrash) |
 
 ### Architecture Matters: The Efficiency Story
@@ -44,11 +55,14 @@ On memory-bandwidth-constrained Jetson (68 GB/s), **architecture efficiency matt
 | Architecture | Efficiency | Example | Speed | Why |
 |-------------|-----------|---------|-------|-----|
 | **Pure LLaMA** | ~100% | Nanbeige4-3B (3B) | **17.22 tok/s** | Simple attention, GPU-optimized |
+| **Ternary (1.58-bit)** | ~100%* | Ternary-Bonsai-8B (8B) | **11.8 tok/s** | {-1,0,+1} weights, 2.03 GB — but needs PrismML fork |
 | **Standard Transformer** | ~89% | Qwen3-8B (8B) | 10.24 tok/s | Minor overhead from grouped attention |
 | **Hybrid DeltaNet** | 69-87% | Qwen3.5-4B (4B) | 10.45 tok/s | Gated recurrent state updates |
 | **Sparse MoE** | ~1% | Qwen3.5-35B (35B) | 0.18 tok/s | Expert routing forces CPU offload |
 
 > **Key insight**: A 3B LLaMA model runs **65% faster** than a 4B DeltaNet model despite being only 7% smaller. Architecture dominates on 8GB.
+
+> *Ternary note: requires PrismML's llama.cpp fork for Q2_0 ternary kernel support — not in mainline llama.cpp. See [docs/jetson-setup.md](docs/jetson-setup.md#ternary-models-prismml-fork).
 
 ### What's Next
 
@@ -70,6 +84,139 @@ Remaining models being tested (12/23):
 | Phi-4 | 28.79 | ~7.8 | Microsoft's 14B, MIT license |
 
 See the full **[benchmark results](BENCHMARKS.md)** with measured data, role-based tests, and BFCL sub-scores.
+
+---
+
+## Getting the Most Out of Ternary-Bonsai
+
+### The Production Setup (What We Use)
+
+```bash
+# All of this is automated via systemd on the Jetson
+llama-server \
+  --model /models/Ternary-Bonsai-8B-Q2_0.gguf \
+  --ctx-size 65536 \
+  --cache-type-k q4_0 \
+  --cache-type-v q4_0 \
+  --n-gpu-layers 999 \
+  --flash-attn on \
+  --mlock \
+  --no-mmap \
+  --parallel 1 \
+  --port 8001
+```
+
+This is **65536 tokens of context** — the model's full native capability. It uses:
+- **2.03 GB model** (ternary Q2_0 weights: {−1, 0, +1})
+- **~2.6 GB KV cache** at full context
+- **~1.5 GB system overhead**
+- **~11.8 tok/s generation** on MAXN_SUPER mode (GPU at 1020 MHz)
+
+### For Different Use Cases
+
+#### 🚀 Maximum Performance (Expert)
+**Goal**: Squeeze every tok/s out of the hardware.
+
+**Context**: 8192 tokens (reduces KV cache to ~350 MB, frees ~2GB)
+```bash
+CTX=8192 ./scripts/start-ternary-bonsai.sh
+```
+**Performance**: ~12.5 tok/s (slightly faster due to smaller KV)
+**Best For**: Fast inference, short conversations, embedded systems
+
+#### 🎯 Balanced (Beginner → Intermediate)
+**Goal**: Good speed + reasonable context for most tasks.
+
+**Context**: 16384 tokens (KV cache ~600 MB)
+```bash
+CTX=16384 ./scripts/start-ternary-bonsai.sh
+```
+**Performance**: ~12.2 tok/s, ~1.6GB KV cache
+**Best For**: Production deployments, coding tasks, most real-world uses
+
+#### 📚 Maximum Context (Research/Long Documents)
+**Goal**: Process long conversations, entire documents, extended reasoning.
+
+**Context**: 65536 tokens (KV cache ~2.6 GB — **this is the current production default**)
+```bash
+CTX=65536 ./scripts/start-ternary-bonsai.sh
+```
+**Performance**: ~11.8 tok/s, ~2.6GB KV cache
+**Best For**: Extended reasoning, document Q&A, multi-turn conversations, this is the **production baseline**
+
+### Memory Management: The Secret Sauce
+
+The Jetson has **8GB unified memory**. This is split between:
+- Model weights (2.03 GB)
+- KV cache (0.3–2.6 GB depending on context size)
+- System + OS (1.5 GB)
+- Free headroom (1–3 GB)
+
+**If the model crashes or seems to use a lot of memory**, the problem is usually:
+
+1. **Not freed after previous run**: The systemd service automatically handles this via ExecStartPre. To manually recover:
+   ```bash
+   sudo systemctl stop jetson-bonsai-llm.service
+   sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches >/dev/null
+   sudo swapoff -a && sudo swapon -a  # Hard cycle swap
+   sudo systemctl start jetson-bonsai-llm.service
+   ```
+
+2. **Context size too large**: If you see OOM with 65536 tokens, try 32768 or 16384:
+   ```bash
+   CTX=32768 ./scripts/start-ternary-bonsai.sh
+   ```
+
+3. **Stale process on port 8001**: Kill it and restart:
+   ```bash
+   sudo fuser -k 8001/tcp
+   sudo systemctl restart jetson-bonsai-llm.service
+   ```
+
+### Performance Tuning: What Actually Matters
+
+| Lever | Impact | Trade-off |
+|-------|--------|----------|
+| **GPU clock (MAXN_SUPER)** | 🟢 +65% | Thermals (62°C sustained) |
+| **Context size (8K → 65K)** | 🟡 −2% (speed) | +2.6GB KV memory |
+| **KV cache quant (q4_0)** | 🟢 Stable | No speed improvement |
+| **Flash attention** | 🟢 Enables 65K context | Included by default |
+| **Parallel slots** | 🔴 Not recommended | (Causes OOM) |
+
+**Bottom line**: The MAXN_SUPER power mode is the **only lever that increases speed**. Everything else is about context size vs. memory trade-offs.
+
+### Verify It's Working
+
+```bash
+# Check service is active
+sudo systemctl status jetson-bonsai-llm.service
+
+# Check health endpoint
+curl http://127.0.0.1:8001/health
+
+# Check memory usage
+free -h
+
+# Test a completion (should return ~11.8 tok/s)
+curl -s http://127.0.0.1:8001/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model": "ternary-bonsai-8b", "messages": [{"role": "user", "content": "Say hello in 10 words"}], "temperature": 0.6, "max_tokens": 100}' | jq .
+```
+
+### Advanced: Why TurboQuant Isn't Used
+
+You might expect TurboQuant 2-bit KV cache here. We tested it:
+- **Issue**: Ternary-Bonsai-8B's Prism build (b1-d104cf1) doesn't expose true 2-bit KV types
+- **Fallback**: We use `q4_0` for both K and V caches (best available)
+- **Result**: Fully stable, no regression in speed or memory vs. q4_1/q5_0
+- **Validated**: Benchmarked 4 KV profiles; q4_0/q4_0 was fastest and most stable
+
+If you're using a different llama.cpp build that supports true 2-bit KV, you can enable it:
+```bash
+--cache-type-k q2_0 --cache-type-v q2_0  # Only if your build supports it
+```
+
+---
 
 ## Platform Features
 

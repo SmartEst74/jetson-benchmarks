@@ -4,10 +4,11 @@
 
 set -euo pipefail
 
-MODEL="/root/.cache/llama.cpp/Nanbeige4-3B-Thinking-Q8_0.gguf"
+MODEL_PATH="${MODEL_PATH:-/home/jetson/models/llama-cache/Nanbeige4-3B-Thinking-Q8_0.gguf}"
+MODEL_BASENAME="$(basename "$MODEL_PATH")"
 CONTAINER_NAME="nanbeige-3b"
-IMAGE="ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin"
-PORT=8000
+IMAGE="${IMAGE:-ghcr.io/nvidia-ai-iot/llama_cpp:latest-jetson-orin}"
+PORT="${PORT:-8000}"
 
 # Drop caches before model load
 echo "Dropping caches..."
@@ -16,19 +17,24 @@ sleep 2
 
 # Stop any running model container
 echo "Stopping existing containers..."
-docker stop qwen35-4b qwen35-9b nanbeige-3b 2>/dev/null || true
-docker rm qwen35-4b qwen35-9b nanbeige-3b 2>/dev/null || true
+sudo docker stop qwen35-4b qwen35-9b nanbeige-3b llm-server 2>/dev/null || true
+sudo docker rm qwen35-4b qwen35-9b nanbeige-3b llm-server 2>/dev/null || true
 sleep 2
 
 echo "Starting Nanbeige4-3B-Thinking Q8_0..."
-docker run -d \
+if [[ ! -f "$MODEL_PATH" ]]; then
+  echo "ERROR: Model file not found: $MODEL_PATH" >&2
+  exit 1
+fi
+
+sudo docker run -d \
   --name "$CONTAINER_NAME" \
   --runtime nvidia \
   --network host \
-  -v /home/jetson/models/llama-cache:/root/.cache/llama.cpp \
+  -v /home/jetson/models/llama-cache:/models \
   "$IMAGE" \
   llama-server \
-    --model "$MODEL" \
+    --model "/models/$MODEL_BASENAME" \
     --host 0.0.0.0 \
     --port "$PORT" \
     --ctx-size 8192 \
@@ -48,5 +54,5 @@ for i in $(seq 1 60); do
 done
 
 echo "ERROR: Server failed to start within 120s"
-docker logs "$CONTAINER_NAME" --tail 20
+sudo docker logs "$CONTAINER_NAME" --tail 20
 exit 1
