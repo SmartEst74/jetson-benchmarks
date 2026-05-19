@@ -31,7 +31,7 @@
       <tr><td>Tried</td><td>Updated <code>/home/hal/src/llama.cpp</code> to latest upstream, rebuilt CUDA binaries, downloaded <code>unsloth/Qwen3.6-35B-A3B-MTP-GGUF:UD-Q8_K_XL</code>, tuned MTP, context, KV placement, GPU tensor split, HTTP thread count, prompt cache behavior, and production hardening flags, then made the anonymous MTP profile the default on port 8080.</td></tr>
       <tr><td>Method</td><td>Single-request benchmark via local OpenAI-compatible endpoint using the deterministic prompt <code>Output the numbers 1 to 120 separated by commas and spaces only.</code> Read speed from <code>timings.predicted_per_second</code>.</td></tr>
       <tr><td>Experiment</td><td>Use the exact MTP-capable Q8_K_XL model with <code>--spec-type draft-mtp</code>, keep MoE mostly on CPU, keep KV off GPU, and tune <code>--spec-draft-n-max</code>.</td></tr>
-      <tr><td>Conclusion</td><td class="good">MTP now works on mainserver with the exact Q8_K_XL MTP model and is the anonymous default service on port 8080. Best measured production profile: <strong>~8.39 tok/s</strong> at 32k context using GPU tensor split <code>4,1</code>, KV on GPU, <code>--spec-draft-n-max 4</code>, single HTTP thread, and UI disabled.</td></tr>
+      <tr><td>Conclusion</td><td class="good">MTP now works on mainserver with the exact Q8_K_XL MTP model and is the anonymous default service on port 8080. Peak measured production profile: <strong>~8.39 tok/s</strong> at 32k context; deployed default profile: <strong>~8.37 tok/s</strong> at 64k context using GPU tensor split <code>4,1</code>, KV on GPU, <code>--spec-draft-n-max 4</code>, single HTTP thread, and UI disabled.</td></tr>
     </tbody>
   </table>
 
@@ -59,12 +59,12 @@
       <tr>
         <td>32k ctx, tensor split <code>4,1</code>, KV on GPU, MTP n=4, <code>--op-offload</code>, <code>--threads-http 1</code>, no UI</td>
         <td class="good">~8.39 tok/s</td>
-        <td>Best stable production result on this hardware.</td>
+        <td>Peak measured production result on this hardware.</td>
       </tr>
       <tr>
         <td>64k ctx, tensor split <code>4,1</code>, KV on GPU, MTP n=4</td>
         <td>~8.37 tok/s</td>
-        <td>Nearly identical speed while preserving a larger context window.</td>
+        <td><strong>Deployed default.</strong> Nearly identical speed while preserving a larger context window.</td>
       </tr>
       <tr>
         <td>32k ctx, tensor split <code>5,1</code>, KV on GPU, MTP n=4</td>
@@ -89,7 +89,7 @@
   -m /home/hal/models/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf \
   -dev CUDA0,CUDA1 \
   -ts 4,1 \
-  -c 32768 \
+  -c 65536 \
   -b 512 -ub 64 \
   -fa on \
   -t 2 -tb 2 \
