@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mainserver Qwen3.6 Text-Turbo Profile</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 1040px; line-height: 1.5; color: #222; }
+    h1, h2 { margin-bottom: 0.4rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #ccc; padding: 0.65rem; text-align: left; vertical-align: top; }
+    th { background: #f5f5f5; }
+    code, pre { background: #f7f7f7; border-radius: 4px; }
+    code { padding: 0.1rem 0.25rem; }
+    .good { color: #0a7a2f; font-weight: bold; }
+    .muted { color: #666; }
+  </style>
+</head>
+<body>
+  <p><a href="index.html">&larr; Back to index</a></p>
+  <h1>Mainserver Qwen3.6 Text-Turbo Profile</h1>
+  <p class="muted">Fastest current profile discovered for the exact same main model, but text-only.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Title</td><td>Mainserver Qwen3.6 text-turbo profile</td></tr>
+      <tr><td>Date</td><td>2026-05-19</td></tr>
+      <tr><td>Tried</td><td>No mmproj, speculative draft decoding, row split mode, fit margin tuning, draft depth tuning.</td></tr>
+      <tr><td>Method</td><td>Repeated local server launches with a fixed deterministic benchmark prompt and readback from <code>timings.predicted_per_second</code>.</td></tr>
+      <tr><td>Experiment</td><td>Use the same main model, disable multimodal projection, add <code>Qwen3.5-0.8B-Q3_K_S.gguf</code> as a speculative draft model, and tune draft depth.</td></tr>
+      <tr><td>Conclusion</td><td class="good">Current best sustained result: ~8.34 tok/s.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Recommended parameters</h2>
+  <pre><code>-m Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf
+-dev CUDA0,CUDA1
+-sm row -ts 5,2 -mg 0
+-fit on -fitc 32768 -fitt 64,64
+-fa on --no-op-offload
+-ctk turbo4 -ctv turbo3
+-b 512 -ub 64
+--n-cpu-moe 38
+-t 2 -tb 2
+--threads-http 2
+-np 1
+--prio 2 --prio-batch 2
+--poll 100 --poll-batch 100
+--kv-unified
+--reasoning-budget 1024
+--mmap --mlock
+--cache-ram 0
+--spec-type draft-simple
+--model-draft Qwen3.5-0.8B-Q3_K_S.gguf
+--spec-draft-n-max 96
+</code></pre>
+
+  <h2>Important trade-off</h2>
+  <p>
+    This profile is <strong>text only</strong>. It drops <code>-mm mmproj...</code>, so it is not the right default if vision support is required. The safe multimodal baseline remains useful, but it is slower.
+  </p>
+
+  <h2>Observed comparison</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Profile</th>
+        <th>Speed</th>
+        <th>Capability</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Multimodal baseline</td>
+        <td>~6.4 tok/s</td>
+        <td>Text + vision</td>
+      </tr>
+      <tr>
+        <td>Text-turbo speculative</td>
+        <td class="good">~8.34 tok/s</td>
+        <td>Text only</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

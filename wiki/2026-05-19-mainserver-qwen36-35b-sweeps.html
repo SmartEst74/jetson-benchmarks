@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mainserver Qwen3.6 35B Optimization Sweeps</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 1040px; line-height: 1.5; color: #222; }
+    h1, h2, h3 { margin-bottom: 0.4rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #ccc; padding: 0.65rem; text-align: left; vertical-align: top; }
+    th { background: #f5f5f5; }
+    code, pre { background: #f7f7f7; border-radius: 4px; }
+    code { padding: 0.1rem 0.25rem; }
+    .meta { margin: 1rem 0 2rem; }
+    .meta dt { font-weight: bold; margin-top: 0.6rem; }
+    .muted { color: #666; }
+    .good { color: #0a7a2f; font-weight: bold; }
+    .warn { color: #a95b00; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <p><a href="index.html">&larr; Back to index</a></p>
+  <h1>Mainserver Qwen3.6 35B Optimization Sweeps</h1>
+  <p class="muted">Same main model, real machine, repeated live sweeps.</p>
+
+  <dl class="meta">
+    <dt>Title</dt>
+    <dd>Mainserver Qwen3.6 35B optimization sweeps</dd>
+
+    <dt>Date</dt>
+    <dd>2026-05-19</dd>
+
+    <dt>Tried</dt>
+    <dd>
+      Removed the Twingate connector from <code>mainserver</code>, upgraded <code>llama-cpp-turboquant</code> to upstream <code>2b61ea24e</code>, installed NCCL, rebuilt, then ran sweeps over split mode, fit margins, context size, thread settings, no-mmproj text-only mode, and speculative draft decoding.
+    </dd>
+
+    <dt>Method</dt>
+    <dd>
+      Single-request benchmark against the local OpenAI-compatible endpoint using a deterministic prompt:
+      <code>Output the numbers 1 to 120 separated by commas and spaces only.</code>
+      Measured with <code>timings.predicted_per_second</code> from the server response.
+    </dd>
+
+    <dt>Experiment</dt>
+    <dd>
+      <ul>
+        <li>Baseline multimodal service after connector removal and tuning</li>
+        <li>Auto-fit vs forced <code>-ngl 999</code></li>
+        <li><code>layer</code> vs <code>row</code> split modes</li>
+        <li>Context sweeps: 131k, 65k, 32k, 16k</li>
+        <li>Speculative ngram modes</li>
+        <li>Draft model tests using <code>Qwen3.5-0.8B-Q3_K_S.gguf</code></li>
+        <li>Text-only mode (no mmproj) + speculative draft parameter tuning</li>
+      </ul>
+    </dd>
+
+    <dt>Conclusion</dt>
+    <dd>
+      <span class="good">Breakthrough achieved.</span> The best stable sustained result so far is <strong>~8.34 tok/s</strong> using the same main model in a text-only profile with a small Qwen-family draft model. The best safe multimodal baseline is about <strong>~6.4 tok/s</strong>.
+    </dd>
+  </dl>
+
+  <h2>Key findings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Case</th>
+        <th>Result</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Multimodal baseline after cleanup</td>
+        <td>~6.40 tok/s</td>
+        <td>Main model + mmproj, connector removed from mainserver, NCCL present, row split auto-fit profile.</td>
+      </tr>
+      <tr>
+        <td>Text-only (no mmproj), no draft</td>
+        <td>~6.34 tok/s</td>
+        <td>Text-only alone helps a little, but not enough.</td>
+      </tr>
+      <tr>
+        <td>Text-only + Qwen3.5 0.8B draft, n=16</td>
+        <td>~8.00 tok/s</td>
+        <td>First real speculative breakthrough.</td>
+      </tr>
+      <tr>
+        <td>Text-only + Qwen3.5 0.8B draft, n=64</td>
+        <td>~8.32 tok/s</td>
+        <td>Very strong result with 100% draft acceptance in this benchmark.</td>
+      </tr>
+      <tr>
+        <td>Text-only + Qwen3.5 0.8B draft, 32k ctx, n=96</td>
+        <td><span class="good">~8.34 tok/s</span></td>
+        <td>Best sustained result seen so far.</td>
+      </tr>
+      <tr>
+        <td>CPU-only draft model</td>
+        <td>~2.2 tok/s</td>
+        <td class="warn">Bad. Draft overhead overwhelms gains.</td>
+      </tr>
+      <tr>
+        <td>MTP mode</td>
+        <td>Failed</td>
+        <td>Main model does not contain MTP layers.</td>
+      </tr>
+      <tr>
+        <td>More aggressive MoE offload changes</td>
+        <td>Failed to load</td>
+        <td>Hardware / memory constraints prevent this path.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Current understanding</h2>
+  <p>
+    The main blockers to 10 tok/s sustained are the host hardware constraints: a 2-core Pentium G4400 and two GTX 1050 Ti 4 GB GPUs. The large gain came from shifting the work into a text-only speculative profile rather than continuing to micro-tune the multimodal baseline.
+  </p>
+
+  <h2>Best current profiles</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Profile</th>
+        <th>Main model</th>
+        <th>Capabilities</th>
+        <th>Speed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Safe multimodal baseline</td>
+        <td>Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf + mmproj</td>
+        <td>Text + vision</td>
+        <td>~6.4 tok/s</td>
+      </tr>
+      <tr>
+        <td>Text-turbo speculative profile</td>
+        <td>Same main model + Qwen3.5-0.8B draft</td>
+        <td>Text only</td>
+        <td class="good">~8.34 tok/s</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

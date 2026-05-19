@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Studio LLM Wiki</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 980px; line-height: 1.5; color: #222; }
+    h1, h2 { margin-bottom: 0.4rem; }
+    .muted { color: #666; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #ccc; padding: 0.65rem; text-align: left; vertical-align: top; }
+    th { background: #f5f5f5; }
+    code, pre { background: #f7f7f7; border-radius: 4px; }
+    code { padding: 0.1rem 0.25rem; }
+    a { color: #0b57d0; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .pill { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 999px; background: #eef4ff; color: #0b57d0; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>Studio LLM Wiki</h1>
+  <p class="muted">Basic HTML notes for fast readback of mainserver / studio experiments.</p>
+
+  <h2>Latest findings</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Date</th>
+        <th>Tried</th>
+        <th>Conclusion</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="2026-05-19-mainserver-qwen36-35b-sweeps.html">Mainserver Qwen3.6 35B optimization sweeps</a></td>
+        <td>2026-05-19</td>
+        <td>Connector removal, latest upstream sync, NCCL rebuild, split-mode sweeps, context sweeps, speculative decoding sweeps</td>
+        <td>Breakthrough: text-only speculative draft path reached <strong>~8.34 tok/s</strong> sustained with the same main model.</td>
+      </tr>
+      <tr>
+        <td><a href="2026-05-19-mainserver-qwen36-text-turbo-profile.html">Text-turbo service profile</a></td>
+        <td>2026-05-19</td>
+        <td>No mmproj, draft model, row split, fit margin, speculative tuning</td>
+        <td>Recommended as the next practical high-speed profile for text-only work.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><span class="pill">Current safe multimodal baseline</span> ~6.4 tok/s sustained</p>
+  <p><span class="pill">Current best text-only speculative profile</span> ~8.34 tok/s sustained</p>
+</body>
+</html>
