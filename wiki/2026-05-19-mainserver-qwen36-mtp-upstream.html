@@ -45,7 +45,8 @@
       <tr><td>Built binary</td><td><code>/home/hal/src/llama.cpp/build-mtp/bin/llama-server</code></td></tr>
       <tr><td>MTP model</td><td><code>/home/hal/models/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf</code></td></tr>
       <tr><td>Default launcher script</td><td><code>/home/hal/bin/qwen36-mtp-prod.sh</code></td></tr>
-      <tr><td>Default systemd unit</td><td><code>/etc/systemd/system/qwen35b-a3b-max-context.service</code> (anonymous MTP default on <code>:8080</code>)</td></tr>
+      <tr><td>Default systemd unit</td><td><code>/etc/systemd/system/qwen35b-a3b-max-context.service</code> (MTP backend now bound to <code>127.0.0.1:8081</code>)</td></tr>
+      <tr><td>Front-door proxy</td><td><code>nginx</code> on <code>:8080</code> serving a landing page at <code>/</code> and proxying API requests to <code>127.0.0.1:8081</code></td></tr>
       <tr><td>Backup multimodal unit</td><td><code>/etc/systemd/system/qwen35b-a3b-multimodal-backup.service</code></td></tr>
     </tbody>
   </table>
@@ -108,7 +109,12 @@
 
   <h2>Important trade-off</h2>
   <p>
-    This MTP profile is now the default on <code>:8080</code> and preserves the exact Q8_K_XL MTP model quality. Full GPU MoE placement is still not possible on this 2x4GB system with the exact Q8 model, but the tuned <code>4,1</code> tensor split shifts more work to GPU, keeps KV on GPU, and materially reduces the earlier CPU-heavy bias.
+    This MTP profile is now the default on <code>:8080</code> via an nginx front door and preserves the exact Q8_K_XL MTP model quality. Full GPU MoE placement is still not possible on this 2x4GB system with the exact Q8 model, but the tuned <code>4,1</code> tensor split shifts more work to GPU, keeps KV on GPU, and materially reduces the earlier CPU-heavy bias.
+  </p>
+
+  <h2>Access fix</h2>
+  <p>
+    The API backend now listens privately on <code>127.0.0.1:8081</code> and nginx exposes the user-facing endpoint on <code>:8080</code>. That fixes the bare browser access problem: <code>http://192.168.1.32:8080/</code> now returns a simple landing page instead of a 404, while <code>/health</code> and <code>/v1/*</code> continue to work normally.
   </p>
 </body>
 </html>
