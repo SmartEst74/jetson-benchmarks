@@ -28,10 +28,10 @@
     <tbody>
       <tr><td>Title</td><td>Mainserver Qwen3.6 MTP upstream deployment</td></tr>
       <tr><td>Date</td><td>2026-05-19</td></tr>
-      <tr><td>Tried</td><td>Updated <code>/home/hal/src/llama.cpp</code> to latest upstream, rebuilt CUDA binaries, downloaded <code>unsloth/Qwen3.6-35B-A3B-MTP-GGUF:UD-Q8_K_XL</code>, tuned MTP, context, KV placement, HTTP thread count, prompt cache behavior, and production hardening flags, then made the MTP profile the default on port 8080.</td></tr>
+      <tr><td>Tried</td><td>Updated <code>/home/hal/src/llama.cpp</code> to latest upstream, rebuilt CUDA binaries, downloaded <code>unsloth/Qwen3.6-35B-A3B-MTP-GGUF:UD-Q8_K_XL</code>, tuned MTP, context, KV placement, GPU tensor split, HTTP thread count, prompt cache behavior, and production hardening flags, then made the anonymous MTP profile the default on port 8080.</td></tr>
       <tr><td>Method</td><td>Single-request benchmark via local OpenAI-compatible endpoint using the deterministic prompt <code>Output the numbers 1 to 120 separated by commas and spaces only.</code> Read speed from <code>timings.predicted_per_second</code>.</td></tr>
       <tr><td>Experiment</td><td>Use the exact MTP-capable Q8_K_XL model with <code>--spec-type draft-mtp</code>, keep MoE mostly on CPU, keep KV off GPU, and tune <code>--spec-draft-n-max</code>.</td></tr>
-      <tr><td>Conclusion</td><td class="good">MTP now works on mainserver with the exact Q8_K_XL MTP model and is the default service on port 8080. Best measured production profile: ~6.93 tok/s at 32k context with <code>--spec-draft-n-max 4</code>, single HTTP thread, API key auth, and UI disabled.</td></tr>
+      <tr><td>Conclusion</td><td class="good">MTP now works on mainserver with the exact Q8_K_XL MTP model and is the anonymous default service on port 8080. Best measured production profile: <strong>~8.39 tok/s</strong> at 32k context using GPU tensor split <code>4,1</code>, KV on GPU, <code>--spec-draft-n-max 4</code>, single HTTP thread, and UI disabled.</td></tr>
     </tbody>
   </table>
 
@@ -45,7 +45,7 @@
       <tr><td>Built binary</td><td><code>/home/hal/src/llama.cpp/build-mtp/bin/llama-server</code></td></tr>
       <tr><td>MTP model</td><td><code>/home/hal/models/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf</code></td></tr>
       <tr><td>Default launcher script</td><td><code>/home/hal/bin/qwen36-mtp-prod.sh</code></td></tr>
-      <tr><td>Default systemd unit</td><td><code>/etc/systemd/system/qwen35b-a3b-max-context.service</code> (MTP default on <code>:8080</code>)</td></tr>
+      <tr><td>Default systemd unit</td><td><code>/etc/systemd/system/qwen35b-a3b-max-context.service</code> (anonymous MTP default on <code>:8080</code>)</td></tr>
       <tr><td>Backup multimodal unit</td><td><code>/etc/systemd/system/qwen35b-a3b-multimodal-backup.service</code></td></tr>
     </tbody>
   </table>
@@ -57,24 +57,24 @@
     </thead>
     <tbody>
       <tr>
-        <td>32k ctx, MTP n=4, <code>--no-op-offload</code>, <code>--threads-http 1</code>, auth + no UI</td>
-        <td class="good">~6.93 tok/s</td>
+        <td>32k ctx, tensor split <code>4,1</code>, KV on GPU, MTP n=4, <code>--op-offload</code>, <code>--threads-http 1</code>, no UI</td>
+        <td class="good">~8.39 tok/s</td>
         <td>Best stable production result on this hardware.</td>
       </tr>
       <tr>
-        <td>32k ctx, MTP n=4</td>
-        <td>~6.84 tok/s</td>
-        <td>Very close to best.</td>
+        <td>64k ctx, tensor split <code>4,1</code>, KV on GPU, MTP n=4</td>
+        <td>~8.37 tok/s</td>
+        <td>Nearly identical speed while preserving a larger context window.</td>
       </tr>
       <tr>
-        <td>65k ctx, MTP n=2</td>
-        <td>~6.47 tok/s</td>
-        <td>Works, but slower.</td>
+        <td>32k ctx, tensor split <code>5,1</code>, KV on GPU, MTP n=4</td>
+        <td>~7.87 tok/s</td>
+        <td>Good fallback if a more GPU0-heavy split is desired.</td>
       </tr>
       <tr>
-        <td>32k ctx, MTP n=3, <code>--no-op-offload</code></td>
-        <td>~6.66 tok/s</td>
-        <td>Stable fallback.</td>
+        <td>32k ctx, tensor split <code>4,1</code>, KV on GPU, MTP n=5</td>
+        <td>~8.14 tok/s</td>
+        <td>More aggressive drafting worked, but was slower than n=4.</td>
       </tr>
       <tr>
         <td>32k ctx, MTP n=4, <code>-ngl 1</code></td>
@@ -88,6 +88,7 @@
   <pre><code>/home/hal/src/llama.cpp/build-mtp/bin/llama-server \
   -m /home/hal/models/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf \
   -dev CUDA0,CUDA1 \
+  -ts 4,1 \
   -c 32768 \
   -b 512 -ub 64 \
   -fa on \
@@ -98,9 +99,7 @@
   --spec-type draft-mtp \
   --spec-draft-n-max 4 \
   --n-cpu-moe 39 \
-  --no-kv-offload \
-  --no-op-offload \
-  --api-key-file /home/hal/.config/llama-server/mainserver-api.keys \
+  --op-offload \
   --no-ui \
   --no-ui-mcp-proxy \
   --no-slots \
@@ -109,7 +108,7 @@
 
   <h2>Important trade-off</h2>
   <p>
-    This MTP profile is now the default on <code>:8080</code> and preserves the exact Q8_K_XL MTP model quality, but it is currently a <strong>text-focused</strong> path. The older multimodal service remains available as a backup unit if vision/mmproj behavior is required.
+    This MTP profile is now the default on <code>:8080</code> and preserves the exact Q8_K_XL MTP model quality. Full GPU MoE placement is still not possible on this 2x4GB system with the exact Q8 model, but the tuned <code>4,1</code> tensor split shifts more work to GPU, keeps KV on GPU, and materially reduces the earlier CPU-heavy bias.
   </p>
 </body>
 </html>
