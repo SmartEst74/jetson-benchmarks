@@ -8,6 +8,7 @@ A guide to choosing and benchmarking local language models on the **NVIDIA Jetso
 | Compare all recorded runs, including failures | [Jetson results](BENCHMARKS.md#jetson-results) |
 | Free memory or recover from a failed load | [Memory preflight](docs/memory.md#before-loading-a-model) |
 | Run a model and measure it on my Jetson | [Setup and benchmark procedure](docs/methodology.md) |
+| Recreate the Bonsai setup on a fresh Jetson | [Bonsai rebuild recipe](docs/bonsai-rebuild.md) |
 | Find the role prompts and grading rubrics | [Role benchmarks](ROLES.md) |
 | Submit a result or see where evidence is missing | [Contributing](CONTRIBUTING.md) · [Roadmap](ROADMAP.md) |
 

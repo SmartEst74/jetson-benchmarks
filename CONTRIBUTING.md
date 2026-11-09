@@ -12,6 +12,8 @@ Use the [benchmark submission template](.github/ISSUE_TEMPLATE/benchmark-submiss
 
 Remove credentials, private prompts, and identifying host details from shared logs. Link evidence from the relevant row in [BENCHMARKS.md](BENCHMARKS.md). Keep candidate predictions and external scores separate from local measurements. If an older result disagrees, link both sources and explain the configuration difference or mark the discrepancy unresolved.
 
+Keep model weights and compiled runtimes outside the checkout. Record how to retrieve and verify them with a revision, filename, and checksum.
+
 ## Documentation changes
 
 Keep [README.md](README.md) as the entry point. Put measured claims in the benchmark catalogue, operating instructions in the [memory guide](docs/memory.md), and benchmark protocol in [methodology](docs/methodology.md). Run the local link check after moving a file or heading.
